@@ -1,0 +1,82 @@
+[mx-checkout] {
+  position: relative;
+  max-width: 560px;
+  margin: auto;
+  width: 100%;
+}
+@media (min-width: 600px) {
+  [mx-checkout] .card {
+    position: relative;
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 10px;
+    width: 400px;
+    height: 250px;
+    -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 85px 22px 0;
+  }
+  [mx-checkout] .card.card-front {
+    z-index: 2;
+    margin-bottom: 15px;
+  }
+  [mx-checkout] .card.card-back {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    right: 0;
+    text-align: right;
+  }
+  [mx-checkout] .stripe {
+    height: 46px;
+    position: absolute;
+    right: 0;
+    top: 18px;
+    background: #666;
+    width: 100%;
+    z-index: -1;
+  }
+}
+[mx-checkout] .form-inline .form-group {
+  display: inline-block;
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+[mx-checkout] .form-inline .form-control {
+  display: inline-block;
+  width: auto;
+  vertical-align: middle;
+}
+[mx-checkout] .form-inline .form-control-static {
+  display: inline-block;
+}
+[mx-checkout] .form-inline .input-group {
+  display: inline-table;
+  vertical-align: middle;
+}
+[mx-checkout] .form-inline .input-group .input-group-addon,
+[mx-checkout] .form-inline .input-group .input-group-btn,
+[mx-checkout] .form-inline .input-group .form-control {
+  width: auto;
+}
+[mx-checkout] .form-inline .input-group > .form-control {
+  width: 100%;
+}
+[mx-checkout] .form-inline .control-label {
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+[mx-checkout] .form-inline .has-feedback .form-control-feedback {
+  top: 0;
+}
+[mx-checkout] .has-feedback .form-control {
+  padding-right: 42.5px;
+}
+[mx-checkout] .glyphicon {
+  font-size: 18px;
+}
+[mx-checkout] iframe {
+  display: block;
+  width: 100%;
+}
+/*# sourceMappingURL=style.css.map */

@@ -1,0 +1,33 @@
+<form class="asd" name="cF" ng-submit="formSubmit(cF)" novalidate>
+    <div class="card card-front">
+        <div mx-field-input="data.formMap" config="data.config.fields.card" form-ctrl="cF"></div>
+        <div class="form-group has-feedback"
+             ng-class="{
+                'has-error': data.valid.iconShow.expireMonth && data.valid.iconShow.expireYear,
+                'has-success': cF.expireMonth.$valid && cF.expireYear.$valid
+            }"
+        >
+            <label class="control-label" for="expireMonth">Valid thru</label>
+            <div class="form-inline">
+                <div mx-field-input="data.formMap" config="data.config.fields.expireMonth" form-ctrl="cF"></div>
+                <label class="expire-delimiter control-label">/</label>
+                <div mx-field-input="data.formMap" config="data.config.fields.expireYear" form-ctrl="cF"></div>
+            </div>
+        </div>
+    </div>
+    <div class="card card-back">
+        <div class="stripe"></div>
+        <div class="form-group has-feedback"
+             ng-class="{
+                'has-error': data.valid.iconShow.cvv,
+                'has-success': cF.cvv.$valid
+            }"
+        >
+            <!--<label class="control-label" for="cvv">CVV2/CVC2 code</label>-->
+            <div class="form-inline">
+                <div mx-field-input="data.formMap" config="data.config.fields.cvv" form-ctrl="cF"></div>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg">Checkout</button>
+</form>

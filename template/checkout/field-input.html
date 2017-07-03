@@ -1,0 +1,48 @@
+<!--form-group-lg-->
+<!--formCtrl[config.id].$invalid && formCtrl[config.id].$touched-->
+<div class="form-group has-feedback"
+     ng-class="{
+                'has-error': valid.iconShow[config.id],
+                'has-success': formCtrl[config.id].$valid
+            }"
+>
+    <label
+            class="control-label"
+            for="{{::config.id}}"
+            ng-if="::config.label"
+    >{{::config.text}}</label>
+    <!--input-group-lg-->
+    <div class="input-group-lg" ng-class="::{'input-group': config.icon}">
+        <span ng-if="::config.icon" class="input-group-addon"><i class="glyphicon {{::config.icon}}"></i></span>
+        <input
+                id="{{::config.id}}"
+                name="{{::config.id}}"
+                ng-model="model[config.id]"
+                type="tel"
+                class="form-control"
+                placeholder="{{::config.placeholder}}"
+                ng-pattern="::config.pattern"
+
+                size="{{::config.size}}"
+                maxlength="{{::config.size}}"
+                autocomplete="off"
+                auto-focus="valid.autoFocus[config.id]"
+
+                mx-field-valid="config"
+                expdate="{{model[config.expdate]}}"
+
+                ng-blur="blur(formCtrl[config.id])"
+                ng-focus="focus(formCtrl[config.id])"
+
+                uib-tooltip="{{valid.errorText[config.id]}}"
+                tooltip-placement="bottom"
+                tooltip-trigger="'focus'"
+                tooltip-enable="{{formCtrl[config.id].$invalid}}"
+        >
+    </div>
+    <!--&& formCtrl[config.id].$touched-->
+    <span class="glyphicon glyphicon-exclamation-sign form-control-feedback"
+          ng-if="valid.iconShow[config.id]"
+    ></span>
+    <span class="glyphicon glyphicon-ok form-control-feedback" ng-if="formCtrl[config.id].$valid"></span>
+</div>
