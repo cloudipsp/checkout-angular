@@ -3,16 +3,22 @@ angular
   .directive('mxCheckout', function() {
     return {
       restrict: 'A',
-      templateUrl: 'mx/template/checkout/form.html',
+      templateUrl: 'mx/template/checkout/checkout.html',
       scope: {
         onSubmit: '&'
       },
       controller: function($scope, mxCheckout, $element, $attrs) {
+        mxCheckout.getData();
+
         $scope.data = mxCheckout.data;
 
         $scope.formSubmit = function(cF) {
           return mxCheckout.formSubmit(cF, $scope.onSubmit, $element);
         };
+
+        $scope.selectPaymentSystems = mxCheckout.selectPaymentSystems;
+        $scope.openTab = mxCheckout.openTab;
+        $scope.stop = mxCheckout.stop;
       }
     };
   })

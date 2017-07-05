@@ -1,0 +1,24 @@
+<div class="row">
+    <div class="col-xs-7">
+        <div mx-field-input="data.card" config="data.config.fields.card" form-ctrl="cF"></div>
+    </div>
+    <div class="col-xs-5">
+        <div class="form-group has-feedback"
+             ng-class="{
+        'has-error': data.valid.iconShow.expireMonth || data.valid.iconShow.expireYear,
+        'has-success': cF.expireMonth.$valid && cF.expireYear.$valid
+    }"
+        >
+            <label class="control-label" for="expireMonth">Expiration</label>
+            <div class="form-inline">
+                <div mx-field-input="data.card" config="data.config.fields.expireMonth" form-ctrl="cF"></div>
+                <div mx-field-input="data.card" config="data.config.fields.expireYear" form-ctrl="cF"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-4">
+        <div mx-field-input="data.card" config="data.config.fields.cvv" form-ctrl="cF"></div>
+    </div>
+</div>

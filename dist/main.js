@@ -2,7 +2,10 @@
 (function(){
 "use strict";
 angular.module('mx.checkout', [
-  'mx/template/checkout/form.html',
+  'mx/template/checkout/checkout.html',
+  'mx/template/checkout/card.html',
+  'mx/template/checkout/ibank.html',
+  'mx/template/checkout/emoney.html',
   'mx/template/checkout/field-input.html',
   'mx/template/checkout/modal.html'
 ]);
@@ -12,9 +15,10 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
   fields: {
     card: {
       id: 'card',
-      placeholder: 'Card number',
-      // text: 'Card number',
-      // label: true,
+      // placeholder: 'Card number',
+      text: 'Card number',
+      label: true,
+      size: '19',
       pattern: '[0-9]{14,19}',
       icon: 'glyphicon-credit-card',
       valid: 'ccard,required'
@@ -37,13 +41,93 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
     },
     cvv: {
       id: 'cvv',
-      placeholder: 'CVV',
+      // placeholder: 'CVV',
+      text: 'Security Code',
+      label: true,
+      info: 'info text',
       size: '3',
       pattern: '[0-9]{3}',
       valid: 'cvv2,required'
     }
   },
-  formMap: ['card', 'expireMonth', 'expireYear', 'cvv']
+  formMap: ['card', 'expireMonth', 'expireYear', 'cvv'],
+  defaultData: {
+    tabs: {
+      card: {
+        id: 'card',
+        icons: ['visa', 'maestro']
+      },
+      emoney: {
+        id: 'emoney',
+        icons: ['qiwi']
+      },
+      ibank: {
+        id: 'ibank',
+        icons: ['p24']
+      }
+    }
+  },
+  getData: {
+    active_tab: 'card',
+    tabs_order: ['card', 'ibank', 'emoney'],
+    tabs: {
+      card: {
+        name: 'Credit or Debit Card'
+      },
+      emoney: {
+        name: 'emoney',
+        payment_systems: {
+          webmoney: {
+            name: 'Webmoney'
+          },
+          webmoney_direct: {
+            name: 'Webmoney'
+          },
+          rfi_webmon: {
+            name: 'Webmoney'
+          },
+          qiwi: {
+            name: 'Qiwi'
+          },
+          qiwi_direct: {
+            name: 'Qiwi'
+          },
+          rfi_qiwi: {
+            name: 'Qiwi'
+          },
+          rfi_yandex: {
+            name: 'rfi_yandex'
+          },
+          master_pass: {
+            name: 'master_pass'
+          }
+        }
+      },
+      ibank: {
+        name: 'ibank',
+        payment_systems: {
+          p24: {
+            name: 'Приват24'
+          },
+          alfa: {
+            name: 'alfa'
+          },
+          plotva24: {
+            name: 'PLATBA 24'
+          },
+          kb_mplotva: {
+            name: 'MojePlatba'
+          },
+          liqpay: {
+            name: 'liqpay'
+          },
+          ralf_banklink: {
+            name: 'Raifaizen BankLink'
+          }
+        }
+      }
+    }
+  }
 });
 
 ;
@@ -52,16 +136,22 @@ angular
   .directive('mxCheckout', function() {
     return {
       restrict: 'A',
-      templateUrl: 'mx/template/checkout/form.html',
+      templateUrl: 'mx/template/checkout/checkout.html',
       scope: {
         onSubmit: '&'
       },
       controller: function($scope, mxCheckout, $element, $attrs) {
+        mxCheckout.getData();
+
         $scope.data = mxCheckout.data;
 
         $scope.formSubmit = function(cF) {
           return mxCheckout.formSubmit(cF, $scope.onSubmit, $element);
         };
+
+        $scope.selectPaymentSystems = mxCheckout.selectPaymentSystems;
+        $scope.openTab = mxCheckout.openTab;
+        $scope.stop = mxCheckout.stop;
       }
     };
   })
@@ -169,10 +259,13 @@ angular
       options: function(value) {
         angular.extend(globalOptions, defaultOptions, value);
       },
-      $get: function(mxCheckoutConfig, mxModal) {
+      $get: function(mxCheckoutConfig, mxModal, $q) {
         var data = {
           config: mxCheckoutConfig,
-          formMap: {},
+          card: {},
+          emoney: {},
+          ibank: {},
+          loading: true,
 
           valid: {
             errorText: {},
@@ -183,15 +276,44 @@ angular
 
         return {
           data: data,
+          getData: getData,
           formSubmit: formSubmit,
+          openTab: openTab,
+          stop: stop,
           blur: blur,
-          focus: focus
+          focus: focus,
+          selectPaymentSystems: selectPaymentSystems
         };
+
+        function getData() {
+          data.loading = true;
+          request().then(
+            function(response) {
+              angular.merge(data, data.config.defaultData, response);
+              data.tabs[data.active_tab].open = true;
+
+              data.loading = false;
+            },
+            function(error) {
+              data.loading = false;
+            }
+          );
+        }
+
+        function request() {
+          var deferred = $q.defer();
+
+          setTimeout(function() {
+            deferred.resolve(data.config.getData);
+          }, 500);
+
+          return deferred.promise;
+        }
 
         function formSubmit(formCtrl, onSubmit, $element) {
           if (formCtrl.$valid) {
             onSubmit({
-              formMap: data.formMap
+              formMap: data[data.active_tab]
             });
             mxModal
               .open(
@@ -228,6 +350,24 @@ angular
           if (inputCtrl.$invalid) {
             data.valid.iconShow[inputCtrl.$name] = false;
           }
+        }
+
+        function selectPaymentSystems(tab, id) {
+          tab.selected = id;
+          data[tab.id].type = id;
+        }
+
+        function openTab($event, id) {
+          if (data.active_tab === id) {
+            stop($event);
+          } else {
+            data.active_tab = id;
+          }
+        }
+
+        function stop($event) {
+          $event.preventDefault();
+          $event.stopPropagation();
         }
       }
     };
@@ -309,8 +449,8 @@ angular
       exp_date: function(field) {
         return _validation.expiry.call(
           this,
-          mxCheckout.data.formMap.expireMonth,
-          mxCheckout.data.formMap.expireYear
+          mxCheckout.data.card.expireMonth,
+          mxCheckout.data.card.expireYear
         );
       }
     };
@@ -340,6 +480,72 @@ angular
   });
 
 ;
+angular.module("mx/template/checkout/card.html", []).run(["$templateCache", function ($templateCache) {
+  $templateCache.put("mx/template/checkout/card.html",
+    "<div class=\"row\">\n" +
+    "    <div class=\"col-xs-7\">\n" +
+    "        <div mx-field-input=\"data.card\" config=\"data.config.fields.card\" form-ctrl=\"cF\"></div>\n" +
+    "    </div>\n" +
+    "    <div class=\"col-xs-5\">\n" +
+    "        <div class=\"form-group has-feedback\"\n" +
+    "             ng-class=\"{\n" +
+    "        'has-error': data.valid.iconShow.expireMonth || data.valid.iconShow.expireYear,\n" +
+    "        'has-success': cF.expireMonth.$valid && cF.expireYear.$valid\n" +
+    "    }\"\n" +
+    "        >\n" +
+    "            <label class=\"control-label\" for=\"expireMonth\">Expiration</label>\n" +
+    "            <div class=\"form-inline\">\n" +
+    "                <div mx-field-input=\"data.card\" config=\"data.config.fields.expireMonth\" form-ctrl=\"cF\"></div>\n" +
+    "                <div mx-field-input=\"data.card\" config=\"data.config.fields.expireYear\" form-ctrl=\"cF\"></div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "<div class=\"row\">\n" +
+    "    <div class=\"col-xs-4\">\n" +
+    "        <div mx-field-input=\"data.card\" config=\"data.config.fields.cvv\" form-ctrl=\"cF\"></div>\n" +
+    "    </div>\n" +
+    "</div>");
+}]);
+
+;
+angular.module("mx/template/checkout/checkout.html", []).run(["$templateCache", function ($templateCache) {
+  $templateCache.put("mx/template/checkout/checkout.html",
+    "<div class=\"loading\" ng-if=\"data.loading\">Loading...</div>\n" +
+    "<form ng-if=\"!data.loading\" name=\"cF\" ng-submit=\"formSubmit(cF)\" novalidate>\n" +
+    "    <uib-accordion>\n" +
+    "        <div\n" +
+    "                uib-accordion-group\n" +
+    "                class=\"panel-default\"\n" +
+    "                ng-repeat=\"tabId in data.tabs_order\"\n" +
+    "                ng-init=\"tab = data.tabs[tabId]\"\n" +
+    "                is-open=\"tab.open\"\n" +
+    "        >\n" +
+    "            <uib-accordion-heading ng-click=\"\">\n" +
+    "                <span class=\"pull-right\">\n" +
+    "                    <i class=\"icon-{{::icon}}\" ng-repeat=\"icon in ::tab.icons\" ng-click=\"stop($event)\">{{::icon}}</i>\n" +
+    "                </span>\n" +
+    "                <span ng-click=\"openTab($event, tab.id)\"><i class=\"glyphicon\" ng-class=\"{'glyphicon-check': tab.open, 'glyphicon-unchecked': !tab.open}\"></i> {{::tab.name}}</span>\n" +
+    "            </uib-accordion-heading>\n" +
+    "            <div ng-if=\"tab.open\" ng-include=\"'mx/template/checkout/' + tab.id + '.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </uib-accordion>\n" +
+    "    <div><i class=\"glyphicon glyphicon-lock\"></i> Your payment info is stored securely</div>\n" +
+    "    <hr>\n" +
+    "    <div class=\"text-right\"><button type=\"submit\" class=\"btn btn-primary btn-lg\">Checkout</button></div>\n" +
+    "</form>");
+}]);
+
+;
+angular.module("mx/template/checkout/emoney.html", []).run(["$templateCache", function ($templateCache) {
+  $templateCache.put("mx/template/checkout/emoney.html",
+    "<div ng-repeat=\"(id, value) in tab.payment_systems\" aria-selected=\"{{tab.selected === id}}\">\n" +
+    "    <a href=\"\" ng-click=\"selectPaymentSystems(tab, id)\"><i class=\"glyphicon\" ng-class=\"{'glyphicon-check': tab.selected === id, 'glyphicon-unchecked': tab.selected !== id}\"></i> {{::value.name}} ({{::id}})</a>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+;
 angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("mx/template/checkout/field-input.html",
     "<!--form-group-lg-->\n" +
@@ -355,8 +561,9 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
     "            for=\"{{::config.id}}\"\n" +
     "            ng-if=\"::config.label\"\n" +
     "    >{{::config.text}}</label>\n" +
+    "    <i ng-if=\"::config.info\" class=\"glyphicon glyphicon-info-sign\" uib-tooltip=\"{{::config.info}}\" tooltip-placement=\"right\"></i>\n" +
     "    <!--input-group-lg-->\n" +
-    "    <div class=\"input-group-lg\" ng-class=\"::{'input-group': config.icon}\">\n" +
+    "    <div class=\"\" ng-class=\"::{'input-group': config.icon}\">\n" +
     "        <span ng-if=\"::config.icon\" class=\"input-group-addon\"><i class=\"glyphicon {{::config.icon}}\"></i></span>\n" +
     "        <input\n" +
     "                id=\"{{::config.id}}\"\n" +
@@ -393,41 +600,12 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
 }]);
 
 ;
-angular.module("mx/template/checkout/form.html", []).run(["$templateCache", function ($templateCache) {
-  $templateCache.put("mx/template/checkout/form.html",
-    "<form class=\"asd\" name=\"cF\" ng-submit=\"formSubmit(cF)\" novalidate>\n" +
-    "    <div class=\"card card-front\">\n" +
-    "        <div mx-field-input=\"data.formMap\" config=\"data.config.fields.card\" form-ctrl=\"cF\"></div>\n" +
-    "        <div class=\"form-group has-feedback\"\n" +
-    "             ng-class=\"{\n" +
-    "                'has-error': data.valid.iconShow.expireMonth && data.valid.iconShow.expireYear,\n" +
-    "                'has-success': cF.expireMonth.$valid && cF.expireYear.$valid\n" +
-    "            }\"\n" +
-    "        >\n" +
-    "            <label class=\"control-label\" for=\"expireMonth\">Valid thru</label>\n" +
-    "            <div class=\"form-inline\">\n" +
-    "                <div mx-field-input=\"data.formMap\" config=\"data.config.fields.expireMonth\" form-ctrl=\"cF\"></div>\n" +
-    "                <label class=\"expire-delimiter control-label\">/</label>\n" +
-    "                <div mx-field-input=\"data.formMap\" config=\"data.config.fields.expireYear\" form-ctrl=\"cF\"></div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "    <div class=\"card card-back\">\n" +
-    "        <div class=\"stripe\"></div>\n" +
-    "        <div class=\"form-group has-feedback\"\n" +
-    "             ng-class=\"{\n" +
-    "                'has-error': data.valid.iconShow.cvv,\n" +
-    "                'has-success': cF.cvv.$valid\n" +
-    "            }\"\n" +
-    "        >\n" +
-    "            <!--<label class=\"control-label\" for=\"cvv\">CVV2/CVC2 code</label>-->\n" +
-    "            <div class=\"form-inline\">\n" +
-    "                <div mx-field-input=\"data.formMap\" config=\"data.config.fields.cvv\" form-ctrl=\"cF\"></div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "    <button type=\"submit\" class=\"btn btn-primary btn-lg\">Checkout</button>\n" +
-    "</form>");
+angular.module("mx/template/checkout/ibank.html", []).run(["$templateCache", function ($templateCache) {
+  $templateCache.put("mx/template/checkout/ibank.html",
+    "<div ng-repeat=\"(id, value) in tab.payment_systems\" aria-selected=\"{{tab.selected === id}}\">\n" +
+    "    <a href=\"\" ng-click=\"selectPaymentSystems(tab, id)\"><i class=\"glyphicon\" ng-class=\"{'glyphicon-check': tab.selected === id, 'glyphicon-unchecked': tab.selected !== id}\"></i> {{::value.name}} ({{::id}})</a>\n" +
+    "</div>\n" +
+    "");
 }]);
 
 ;

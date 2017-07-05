@@ -8,10 +8,13 @@ angular
       options: function(value) {
         angular.extend(globalOptions, defaultOptions, value);
       },
-      $get: function(mxCheckoutConfig, mxModal) {
+      $get: function(mxCheckoutConfig, mxModal, $q) {
         var data = {
           config: mxCheckoutConfig,
-          formMap: {},
+          card: {},
+          emoney: {},
+          ibank: {},
+          loading: true,
 
           valid: {
             errorText: {},
@@ -22,15 +25,44 @@ angular
 
         return {
           data: data,
+          getData: getData,
           formSubmit: formSubmit,
+          openTab: openTab,
+          stop: stop,
           blur: blur,
-          focus: focus
+          focus: focus,
+          selectPaymentSystems: selectPaymentSystems
         };
+
+        function getData() {
+          data.loading = true;
+          request().then(
+            function(response) {
+              angular.merge(data, data.config.defaultData, response);
+              data.tabs[data.active_tab].open = true;
+
+              data.loading = false;
+            },
+            function(error) {
+              data.loading = false;
+            }
+          );
+        }
+
+        function request() {
+          var deferred = $q.defer();
+
+          setTimeout(function() {
+            deferred.resolve(data.config.getData);
+          }, 500);
+
+          return deferred.promise;
+        }
 
         function formSubmit(formCtrl, onSubmit, $element) {
           if (formCtrl.$valid) {
             onSubmit({
-              formMap: data.formMap
+              formMap: data[data.active_tab]
             });
             mxModal
               .open(
@@ -67,6 +99,24 @@ angular
           if (inputCtrl.$invalid) {
             data.valid.iconShow[inputCtrl.$name] = false;
           }
+        }
+
+        function selectPaymentSystems(tab, id) {
+          tab.selected = id;
+          data[tab.id].type = id;
+        }
+
+        function openTab($event, id) {
+          if (data.active_tab === id) {
+            stop($event);
+          } else {
+            data.active_tab = id;
+          }
+        }
+
+        function stop($event) {
+          $event.preventDefault();
+          $event.stopPropagation();
         }
       }
     };
@@ -148,8 +198,8 @@ angular
       exp_date: function(field) {
         return _validation.expiry.call(
           this,
-          mxCheckout.data.formMap.expireMonth,
-          mxCheckout.data.formMap.expireYear
+          mxCheckout.data.card.expireMonth,
+          mxCheckout.data.card.expireYear
         );
       }
     };

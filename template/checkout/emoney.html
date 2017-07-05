@@ -1,0 +1,3 @@
+<div ng-repeat="(id, value) in tab.payment_systems" aria-selected="{{tab.selected === id}}">
+    <a href="" ng-click="selectPaymentSystems(tab, id)"><i class="glyphicon" ng-class="{'glyphicon-check': tab.selected === id, 'glyphicon-unchecked': tab.selected !== id}"></i> {{::value.name}} ({{::id}})</a>
+</div>

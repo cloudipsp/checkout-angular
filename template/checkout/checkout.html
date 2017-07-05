@@ -1,0 +1,23 @@
+<div class="loading" ng-if="data.loading">Loading...</div>
+<form ng-if="!data.loading" name="cF" ng-submit="formSubmit(cF)" novalidate>
+    <uib-accordion>
+        <div
+                uib-accordion-group
+                class="panel-default"
+                ng-repeat="tabId in data.tabs_order"
+                ng-init="tab = data.tabs[tabId]"
+                is-open="tab.open"
+        >
+            <uib-accordion-heading ng-click="">
+                <span class="pull-right">
+                    <i class="icon-{{::icon}}" ng-repeat="icon in ::tab.icons" ng-click="stop($event)">{{::icon}}</i>
+                </span>
+                <span ng-click="openTab($event, tab.id)"><i class="glyphicon" ng-class="{'glyphicon-check': tab.open, 'glyphicon-unchecked': !tab.open}"></i> {{::tab.name}}</span>
+            </uib-accordion-heading>
+            <div ng-if="tab.open" ng-include="'mx/template/checkout/' + tab.id + '.html'"></div>
+        </div>
+    </uib-accordion>
+    <div><i class="glyphicon glyphicon-lock"></i> Your payment info is stored securely</div>
+    <hr>
+    <div class="text-right"><button type="submit" class="btn btn-primary btn-lg">Checkout</button></div>
+</form>

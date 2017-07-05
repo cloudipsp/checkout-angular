@@ -1,49 +1,30 @@
-@screen-xs-min: 600px;
-@screen-xs-max: (@screen-xs-min - 1);
+@bootstrap-path: 'node_modules/bootstrap/less/';
+
+@import "variables";
+@import "@{bootstrap-path}mixins";
 
 [mx-checkout] {
-  position: relative;
-  max-width: 560px;
+  max-width: 450px;
   margin: auto;
   width: 100%;
 
-  @media (min-width: @screen-xs-min) {
-    .card {
-      position: relative;
-      background: #fff;
-      border: 1px solid #e6e6e6;
-      border-radius: 10px;
-      width: 400px;
-      height: 250px;
-      -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      padding: 85px 22px 0;
-      &.card-front {
-        z-index: 2;
-        margin-bottom: 15px;
-      }
-      &.card-back {
-        z-index: 1;
-        position: absolute;
-        top: 0;
-        right: 0;
-        text-align: right;
-      }
+  .panel-default {
+    .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border);
+
+    > .panel-heading + .panel-collapse > .panel-body {
+      border: 0;
     }
 
-    .stripe {
-      height: 46px;
-      position: absolute;
-      right: 0;
-      top: 18px;
-      background: #666;
-      width: 100%;
-      z-index: -1;
+    &.panel-open{
+      background: #F6F7F9;
+      .panel-heading{
+        background: #F6F7F9;
+        border: none;
+      }
     }
   }
 
   .form-inline {
-
     .form-group {
       display: inline-block;
       margin-bottom: 0;
@@ -85,25 +66,11 @@
     }
 
   }
-  .has-feedback .form-control {
-    padding-right: 42.5px;
-  }
-  .glyphicon{
-    font-size: 18px;
-  }
-  .tooltip-inner {
-    //color: @tooltip-color;
-    //background-color: @tooltip-bg;
-  }
   iframe {
     display: block;
     width: 100%;
   }
-
-  //.has-error .form-control {
-  //  border-color: #a94442;
-  //}
-  //.has-error .input-group-addon {
-  //  color: #a94442;
-  //}
+  .has-feedback .form-control {
+      padding-right: 30px;
+  }
 }

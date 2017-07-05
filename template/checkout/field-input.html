@@ -11,8 +11,9 @@
             for="{{::config.id}}"
             ng-if="::config.label"
     >{{::config.text}}</label>
+    <i ng-if="::config.info" class="glyphicon glyphicon-info-sign" uib-tooltip="{{::config.info}}" tooltip-placement="right"></i>
     <!--input-group-lg-->
-    <div class="input-group-lg" ng-class="::{'input-group': config.icon}">
+    <div class="" ng-class="::{'input-group': config.icon}">
         <span ng-if="::config.icon" class="input-group-addon"><i class="glyphicon {{::config.icon}}"></i></span>
         <input
                 id="{{::config.id}}"
