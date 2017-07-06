@@ -4,17 +4,17 @@
         <div
                 uib-accordion-group
                 class="panel-default"
-                ng-repeat="tabId in data.tabs_order"
+                ng-repeat="tabId in ::data.tabs_order"
                 ng-init="tab = data.tabs[tabId]"
                 is-open="tab.open"
         >
             <uib-accordion-heading ng-click="">
                 <span class="pull-right">
-                    <i class="icon-{{::icon}}" ng-repeat="icon in ::tab.icons" ng-click="stop($event)">{{::icon}}</i>
+                    <i class="i i-{{::icon}}" ng-repeat="icon in ::tab.icons" ng-click="stop($event)"></i>
                 </span>
-                <span ng-click="openTab($event, tab.id)"><i class="glyphicon" ng-class="{'glyphicon-check': tab.open, 'glyphicon-unchecked': !tab.open}"></i> {{::tab.name}}</span>
+                <span class="title">{{::tab.name}}</span>
             </uib-accordion-heading>
-            <div ng-if="tab.open" ng-include="'mx/template/checkout/' + tab.id + '.html'"></div>
+            <div  ng-include="'mx/template/checkout/' + tab.id + '.html'"></div>
         </div>
     </uib-accordion>
     <div><i class="glyphicon glyphicon-lock"></i> Your payment info is stored securely</div>

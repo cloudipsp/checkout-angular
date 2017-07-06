@@ -20,7 +20,7 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       label: true,
       size: '19',
       pattern: '[0-9]{14,19}',
-      icon: 'glyphicon-credit-card',
+      // icon: 'glyphicon-credit-card',
       valid: 'ccard,required'
     },
     expireMonth: {
@@ -44,7 +44,8 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       // placeholder: 'CVV',
       text: 'Security Code',
       label: true,
-      info: 'info text',
+      info:
+        'CVV/CVC2 – this 3-digits are security code. It is located in the signature field on the back of your payment card (last three digits)',
       size: '3',
       pattern: '[0-9]{3}',
       valid: 'cvv2,required'
@@ -55,15 +56,15 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
     tabs: {
       card: {
         id: 'card',
-        icons: ['visa', 'maestro']
+        icons: ['visa', 'master', 'american', 'discover']
       },
       emoney: {
         id: 'emoney',
-        icons: ['qiwi']
+        icons: []
       },
       ibank: {
         id: 'ibank',
-        icons: ['p24']
+        icons: []
       }
     }
   },
@@ -75,54 +76,21 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
         name: 'Credit or Debit Card'
       },
       emoney: {
-        name: 'emoney',
+        name: 'Electronic money',
         payment_systems: {
           webmoney: {
             name: 'Webmoney'
-          },
-          webmoney_direct: {
-            name: 'Webmoney'
-          },
-          rfi_webmon: {
-            name: 'Webmoney'
-          },
-          qiwi: {
-            name: 'Qiwi'
-          },
-          qiwi_direct: {
-            name: 'Qiwi'
-          },
-          rfi_qiwi: {
-            name: 'Qiwi'
-          },
-          rfi_yandex: {
-            name: 'rfi_yandex'
-          },
-          master_pass: {
-            name: 'master_pass'
           }
         }
       },
       ibank: {
-        name: 'ibank',
+        name: 'Internet-banking',
         payment_systems: {
           p24: {
             name: 'Приват24'
           },
-          alfa: {
-            name: 'alfa'
-          },
           plotva24: {
             name: 'PLATBA 24'
-          },
-          kb_mplotva: {
-            name: 'MojePlatba'
-          },
-          liqpay: {
-            name: 'liqpay'
-          },
-          ralf_banklink: {
-            name: 'Raifaizen BankLink'
           }
         }
       }
@@ -150,7 +118,6 @@ angular
         };
 
         $scope.selectPaymentSystems = mxCheckout.selectPaymentSystems;
-        $scope.openTab = mxCheckout.openTab;
         $scope.stop = mxCheckout.stop;
       }
     };
@@ -233,7 +200,7 @@ angular
           if (result) {
             mxCheckout.data.valid.iconShow[scope.config.expdate] = false;
           } else {
-            mxCheckout.data.valid.errorText[ngModel.$name] = 'error ' + valid;
+            mxCheckout.data.valid.errorText[ngModel.$name] = 'Error ' + valid;
           }
           ngModel.$setValidity(valid, result);
         }
@@ -278,7 +245,6 @@ angular
           data: data,
           getData: getData,
           formSubmit: formSubmit,
-          openTab: openTab,
           stop: stop,
           blur: blur,
           focus: focus,
@@ -313,7 +279,7 @@ angular
         function formSubmit(formCtrl, onSubmit, $element) {
           if (formCtrl.$valid) {
             onSubmit({
-              formMap: data[data.active_tab]
+              formMap: data[getActiveTab()]
             });
             mxModal
               .open(
@@ -357,17 +323,19 @@ angular
           data[tab.id].type = id;
         }
 
-        function openTab($event, id) {
-          if (data.active_tab === id) {
-            stop($event);
-          } else {
-            data.active_tab = id;
-          }
-        }
-
         function stop($event) {
           $event.preventDefault();
           $event.stopPropagation();
+        }
+
+        function getActiveTab() {
+          var result;
+          angular.forEach(data.tabs, function(tab) {
+            if (tab.open) {
+              result = tab.id;
+            }
+          });
+          return result;
         }
       }
     };
@@ -483,6 +451,11 @@ angular
 angular.module("mx/template/checkout/card.html", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("mx/template/checkout/card.html",
     "<div class=\"row\">\n" +
+    "    <div class=\"col-xs-12\">\n" +
+    "        <div ng-if=\"cF.$invalid && cF.$dirty\" class=\"alert alert-danger\" role=\"alert\">Error</div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "<div class=\"row\">\n" +
     "    <div class=\"col-xs-7\">\n" +
     "        <div mx-field-input=\"data.card\" config=\"data.config.fields.card\" form-ctrl=\"cF\"></div>\n" +
     "    </div>\n" +
@@ -517,17 +490,17 @@ angular.module("mx/template/checkout/checkout.html", []).run(["$templateCache", 
     "        <div\n" +
     "                uib-accordion-group\n" +
     "                class=\"panel-default\"\n" +
-    "                ng-repeat=\"tabId in data.tabs_order\"\n" +
+    "                ng-repeat=\"tabId in ::data.tabs_order\"\n" +
     "                ng-init=\"tab = data.tabs[tabId]\"\n" +
     "                is-open=\"tab.open\"\n" +
     "        >\n" +
     "            <uib-accordion-heading ng-click=\"\">\n" +
     "                <span class=\"pull-right\">\n" +
-    "                    <i class=\"icon-{{::icon}}\" ng-repeat=\"icon in ::tab.icons\" ng-click=\"stop($event)\">{{::icon}}</i>\n" +
+    "                    <i class=\"i i-{{::icon}}\" ng-repeat=\"icon in ::tab.icons\" ng-click=\"stop($event)\"></i>\n" +
     "                </span>\n" +
-    "                <span ng-click=\"openTab($event, tab.id)\"><i class=\"glyphicon\" ng-class=\"{'glyphicon-check': tab.open, 'glyphicon-unchecked': !tab.open}\"></i> {{::tab.name}}</span>\n" +
+    "                <span class=\"title\">{{::tab.name}}</span>\n" +
     "            </uib-accordion-heading>\n" +
-    "            <div ng-if=\"tab.open\" ng-include=\"'mx/template/checkout/' + tab.id + '.html'\"></div>\n" +
+    "            <div  ng-include=\"'mx/template/checkout/' + tab.id + '.html'\"></div>\n" +
     "        </div>\n" +
     "    </uib-accordion>\n" +
     "    <div><i class=\"glyphicon glyphicon-lock\"></i> Your payment info is stored securely</div>\n" +
@@ -539,10 +512,19 @@ angular.module("mx/template/checkout/checkout.html", []).run(["$templateCache", 
 ;
 angular.module("mx/template/checkout/emoney.html", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("mx/template/checkout/emoney.html",
-    "<div ng-repeat=\"(id, value) in tab.payment_systems\" aria-selected=\"{{tab.selected === id}}\">\n" +
-    "    <a href=\"\" ng-click=\"selectPaymentSystems(tab, id)\"><i class=\"glyphicon\" ng-class=\"{'glyphicon-check': tab.selected === id, 'glyphicon-unchecked': tab.selected !== id}\"></i> {{::value.name}} ({{::id}})</a>\n" +
-    "</div>\n" +
-    "");
+    "<div class=\"payment-systems form-group\">\n" +
+    "    <div class=\"payment-system\"\n" +
+    "         ng-class=\"{\n" +
+    "            active: tab.selected === id\n" +
+    "         }\"\n" +
+    "         ng-repeat=\"(id, value) in tab.payment_systems\"\n" +
+    "         aria-selected=\"{{tab.selected === id}}\"\n" +
+    "         ng-click=\"selectPaymentSystems(tab, id)\"\n" +
+    "    >\n" +
+    "        <div class=\"i-payment-system i-{{::id}}\"></div>\n" +
+    "        <div>{{::value.name}}</div>\n" +
+    "    </div>\n" +
+    "</div>");
 }]);
 
 ;
@@ -561,7 +543,7 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
     "            for=\"{{::config.id}}\"\n" +
     "            ng-if=\"::config.label\"\n" +
     "    >{{::config.text}}</label>\n" +
-    "    <i ng-if=\"::config.info\" class=\"glyphicon glyphicon-info-sign\" uib-tooltip=\"{{::config.info}}\" tooltip-placement=\"right\"></i>\n" +
+    "    <i ng-if=\"::config.info\" class=\"glyphicon glyphicon-info-sign\" uib-tooltip=\"{{::config.info}}\" tooltip-placement=\"right\" tooltip-append-to-body=\"true\"></i>\n" +
     "    <!--input-group-lg-->\n" +
     "    <div class=\"\" ng-class=\"::{'input-group': config.icon}\">\n" +
     "        <span ng-if=\"::config.icon\" class=\"input-group-addon\"><i class=\"glyphicon {{::config.icon}}\"></i></span>\n" +
@@ -602,10 +584,19 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
 ;
 angular.module("mx/template/checkout/ibank.html", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("mx/template/checkout/ibank.html",
-    "<div ng-repeat=\"(id, value) in tab.payment_systems\" aria-selected=\"{{tab.selected === id}}\">\n" +
-    "    <a href=\"\" ng-click=\"selectPaymentSystems(tab, id)\"><i class=\"glyphicon\" ng-class=\"{'glyphicon-check': tab.selected === id, 'glyphicon-unchecked': tab.selected !== id}\"></i> {{::value.name}} ({{::id}})</a>\n" +
-    "</div>\n" +
-    "");
+    "<div class=\"payment-systems form-group\">\n" +
+    "    <div class=\"payment-system\"\n" +
+    "         ng-class=\"{\n" +
+    "            active: tab.selected === id\n" +
+    "         }\"\n" +
+    "         ng-repeat=\"(id, value) in tab.payment_systems\"\n" +
+    "         aria-selected=\"{{tab.selected === id}}\"\n" +
+    "         ng-click=\"selectPaymentSystems(tab, id)\"\n" +
+    "    >\n" +
+    "        <div class=\"i-payment-system i-{{::id}}\"></div>\n" +
+    "        <div>{{::value.name}}</div>\n" +
+    "    </div>\n" +
+    "</div>");
 }]);
 
 ;
@@ -621,4 +612,4 @@ angular.module("mx/template/checkout/modal.html", []).run(["$templateCache", fun
 }]);
 
 })();
-//# sourceMappingURL=main.js.map
+//# sourceMappingURL=checkout.js.map

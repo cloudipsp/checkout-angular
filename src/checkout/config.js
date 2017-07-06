@@ -7,7 +7,7 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       label: true,
       size: '19',
       pattern: '[0-9]{14,19}',
-      icon: 'glyphicon-credit-card',
+      // icon: 'glyphicon-credit-card',
       valid: 'ccard,required'
     },
     expireMonth: {
@@ -31,7 +31,8 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       // placeholder: 'CVV',
       text: 'Security Code',
       label: true,
-      info: 'info text',
+      info:
+        'CVV/CVC2 – this 3-digits are security code. It is located in the signature field on the back of your payment card (last three digits)',
       size: '3',
       pattern: '[0-9]{3}',
       valid: 'cvv2,required'
@@ -42,15 +43,15 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
     tabs: {
       card: {
         id: 'card',
-        icons: ['visa', 'maestro']
+        icons: ['visa', 'master', 'american', 'discover']
       },
       emoney: {
         id: 'emoney',
-        icons: ['qiwi']
+        icons: []
       },
       ibank: {
         id: 'ibank',
-        icons: ['p24']
+        icons: []
       }
     }
   },
@@ -62,54 +63,21 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
         name: 'Credit or Debit Card'
       },
       emoney: {
-        name: 'emoney',
+        name: 'Electronic money',
         payment_systems: {
           webmoney: {
             name: 'Webmoney'
-          },
-          webmoney_direct: {
-            name: 'Webmoney'
-          },
-          rfi_webmon: {
-            name: 'Webmoney'
-          },
-          qiwi: {
-            name: 'Qiwi'
-          },
-          qiwi_direct: {
-            name: 'Qiwi'
-          },
-          rfi_qiwi: {
-            name: 'Qiwi'
-          },
-          rfi_yandex: {
-            name: 'rfi_yandex'
-          },
-          master_pass: {
-            name: 'master_pass'
           }
         }
       },
       ibank: {
-        name: 'ibank',
+        name: 'Internet-banking',
         payment_systems: {
           p24: {
             name: 'Приват24'
           },
-          alfa: {
-            name: 'alfa'
-          },
           plotva24: {
             name: 'PLATBA 24'
-          },
-          kb_mplotva: {
-            name: 'MojePlatba'
-          },
-          liqpay: {
-            name: 'liqpay'
-          },
-          ralf_banklink: {
-            name: 'Raifaizen BankLink'
           }
         }
       }

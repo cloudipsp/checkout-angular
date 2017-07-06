@@ -17,7 +17,6 @@ angular
         };
 
         $scope.selectPaymentSystems = mxCheckout.selectPaymentSystems;
-        $scope.openTab = mxCheckout.openTab;
         $scope.stop = mxCheckout.stop;
       }
     };
@@ -100,7 +99,7 @@ angular
           if (result) {
             mxCheckout.data.valid.iconShow[scope.config.expdate] = false;
           } else {
-            mxCheckout.data.valid.errorText[ngModel.$name] = 'error ' + valid;
+            mxCheckout.data.valid.errorText[ngModel.$name] = 'Error ' + valid;
           }
           ngModel.$setValidity(valid, result);
         }

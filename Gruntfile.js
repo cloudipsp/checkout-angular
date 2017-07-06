@@ -6,7 +6,7 @@ module.exports = function (grunt) {
         separator: '\n;\n',
         sourceMap: true
       },
-      main: {
+      checkout: {
         options: {
           banner: '\n(function(){\n"use strict";\n',
           footer: '\n})();'
@@ -17,16 +17,16 @@ module.exports = function (grunt) {
           'src/**/*.js',
           'template/**/*.js'
         ],
-        dest: 'dist/main.js'
+        dest: 'dist/checkout.js'
       }
     },
     ngAnnotate: {
       options: {
         singleQuotes: true
       },
-      main: {
-        src: ['dist/main.js'],
-        dest: 'dist/main.js'
+      checkout: {
+        src: ['dist/checkout.js'],
+        dest: 'dist/checkout.js'
       }
     },
     html2js: {
@@ -51,9 +51,9 @@ module.exports = function (grunt) {
           drop_console: true
         }
       },
-      main: {
-        src: ['dist/main.js'],
-        dest: 'dist/main.min.js'
+      checkout: {
+        src: ['dist/checkout.js'],
+        dest: 'dist/checkout.min.js'
       }
     },
     less: {
@@ -64,14 +64,14 @@ module.exports = function (grunt) {
           sourceMapRootpath: '..'
         },
         src: ['src/index.less'],
-        dest: 'dist/style.css'
+        dest: 'dist/checkout.css'
       },
       dist: {
         options: {
           compress: true
         },
         expand: true,
-        src: ['dist/style.css'],
+        src: ['dist/checkout.css'],
         ext: '.min.css'
       }
     },
@@ -80,7 +80,7 @@ module.exports = function (grunt) {
         logConcurrentOutput: true
       },
       dev: {
-        tasks: ['watch:less', 'watch:main', 'watch:template']
+        tasks: ['watch:less', 'watch:checkout', 'watch:template']
       }
     },
     watch: {
@@ -91,12 +91,12 @@ module.exports = function (grunt) {
         files: ['src/**/*.less'],
         tasks: ['less:dev']
       },
-      main: {
+      checkout: {
         files: [
           'src/**/*.js',
           'template/**/*.js'
         ],
-        tasks: ['concat:main']
+        tasks: ['concat:checkout']
       },
       template: {
         files: ['template/**/*.html'],
@@ -128,14 +128,14 @@ module.exports = function (grunt) {
     'less:dist',
     'prettier:base',
     'html2js',
-    'concat:main',
-    'ngAnnotate:main',
-    'uglify:main'
+    'concat:checkout',
+    'ngAnnotate:checkout',
+    'uglify:checkout'
   ]);
 
   grunt.registerTask('dev', [
     'less:dev',
-    'concat:main',
+    'concat:checkout',
     'concurrent:dev'
   ]);
 };

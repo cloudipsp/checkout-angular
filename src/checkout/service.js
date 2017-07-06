@@ -27,7 +27,6 @@ angular
           data: data,
           getData: getData,
           formSubmit: formSubmit,
-          openTab: openTab,
           stop: stop,
           blur: blur,
           focus: focus,
@@ -62,7 +61,7 @@ angular
         function formSubmit(formCtrl, onSubmit, $element) {
           if (formCtrl.$valid) {
             onSubmit({
-              formMap: data[data.active_tab]
+              formMap: data[getActiveTab()]
             });
             mxModal
               .open(
@@ -106,17 +105,19 @@ angular
           data[tab.id].type = id;
         }
 
-        function openTab($event, id) {
-          if (data.active_tab === id) {
-            stop($event);
-          } else {
-            data.active_tab = id;
-          }
-        }
-
         function stop($event) {
           $event.preventDefault();
           $event.stopPropagation();
+        }
+
+        function getActiveTab() {
+          var result;
+          angular.forEach(data.tabs, function(tab) {
+            if (tab.open) {
+              result = tab.id;
+            }
+          });
+          return result;
         }
       }
     };

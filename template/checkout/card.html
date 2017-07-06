@@ -1,4 +1,9 @@
 <div class="row">
+    <div class="col-xs-12">
+        <div ng-if="cF.$invalid && cF.$dirty" class="alert alert-danger" role="alert">Error</div>
+    </div>
+</div>
+<div class="row">
     <div class="col-xs-7">
         <div mx-field-input="data.card" config="data.config.fields.card" form-ctrl="cF"></div>
     </div>
