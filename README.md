@@ -1,6 +1,6 @@
 # Demo
 
-Do you want to see directives in action? Visit **[demo](https://codepen.io/lamerumixa/pen/qjYZLb)**!
+Do you want to see directives in action? Visit **[demo shop](https://codepen.io/lamerumixa/pen/BZPGgV)** **[demo](https://codepen.io/lamerumixa/pen/qjYZLb)**!
 
 ## Dependencies
 This repository contains a set of **native AngularJS directives** based on Bootstrap's markup and CSS. As a result no dependency on jQuery or Bootstrap's JavaScript is required. 
