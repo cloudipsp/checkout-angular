@@ -1,4 +1,3 @@
-<!--form-group-lg-->
 <div class="form-group"
      ng-class="{
                 'has-error': valid.iconShow[config.id],
@@ -24,15 +23,16 @@
             autocomplete="off"
             auto-focus="valid.autoFocus[config.id]"
 
-            mx-field-valid="config"
+            model="model"
+            config="config"
+            mx-field-valid="valid"
             expdate="{{model[config.expdate]}}"
 
-            ng-blur="blur(formCtrl[config.id])"
-            ng-focus="focus(formCtrl[config.id])"
+            ng-blur="blur({inputCtrl: formCtrl[config.id]})"
+            ng-focus="focus({inputCtrl: formCtrl[config.id]})"
 
             uib-tooltip="{{valid.errorText[config.id]}}"
             tooltip-placement="bottom"
-            tooltip-append-to-body="true"
             tooltip-trigger="'focus'"
             tooltip-enable="{{formCtrl[config.id].$invalid}}"
     >

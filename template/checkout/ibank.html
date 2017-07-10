@@ -1,13 +1,16 @@
-<div class="payment-systems form-group">
-    <div class="payment-system"
-         ng-class="{
+<form name="data.formCtrl.ibank" ng-submit="formSubmit()" novalidate>
+    <div class="payment-systems form-group">
+        <div class="payment-system"
+             ng-class="{
             active: tab.selected === id
          }"
-         ng-repeat="(id, value) in tab.payment_systems"
-         aria-selected="{{tab.selected === id}}"
-         ng-click="selectPaymentSystems(tab, id)"
-    >
-        <div class="i-payment-system i-{{::id}}"></div>
-        <div>{{::value.name}}</div>
+             ng-repeat="(id, value) in tab.payment_systems"
+             ng-click="selectPaymentSystems(tab, id)"
+        >
+            <div class="i-payment-system i-{{::id}}"></div>
+            <div>{{::value.name}}</div>
+        </div>
     </div>
-</div>
+    <input type="hidden" ng-model="data.ibank.type" ng-required="true">
+    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" />
+</form>

@@ -12,12 +12,14 @@ angular
 
         $scope.data = mxCheckout.data;
 
-        $scope.formSubmit = function(cF) {
-          return mxCheckout.formSubmit(cF, $scope.onSubmit, $element);
+        $scope.formSubmit = function(clickButton) {
+          return mxCheckout.formSubmit($scope.onSubmit, $element, clickButton);
         };
 
         $scope.selectPaymentSystems = mxCheckout.selectPaymentSystems;
         $scope.stop = mxCheckout.stop;
+        $scope.blur = mxCheckout.blur;
+        $scope.focus = mxCheckout.focus;
       }
     };
   })
@@ -29,12 +31,10 @@ angular
       scope: {
         model: '=mxFieldInput',
         config: '=',
-        formCtrl: '='
-      },
-      controller: function($scope, mxCheckout) {
-        $scope.blur = mxCheckout.blur;
-        $scope.focus = mxCheckout.focus;
-        $scope.valid = mxCheckout.data.valid;
+        formCtrl: '=',
+        valid: '=',
+        blur: '&',
+        focus: '&'
       }
     };
   })
@@ -56,27 +56,26 @@ angular
       }
     };
   })
-  .directive('mxFieldValid', function(
-    mxValidation,
-    mxCheckout,
-    mxCheckoutConfig
-  ) {
+  .directive('mxFieldValid', function(mxValidation, mxCheckoutConfig) {
     return {
       restrict: 'A',
       require: 'ngModel',
-      // scope: {
-      //   config: '=mxFieldValid'
-      // },
+      scope: {
+        valid: '=mxFieldValid',
+        config: '=',
+        model: '='
+      },
       link: function(scope, element, attrs, ngModel) {
         if (scope.config.valid) {
           angular.forEach(scope.config.valid.split(','), function(valid) {
-            // mxValidation.validate(ngModel.$modelValue, valid, setError);
+            mxValidation.validate(ngModel.$modelValue, valid, setError);
             scope.$watch(
               function() {
                 return ngModel.$modelValue;
               },
               function(value) {
-                mxValidation.validate(value, valid, setError);
+                // console.log('$watch', value)
+                mxValidation.validate({ value: value }, valid, setError);
               },
               true
             );
@@ -87,7 +86,8 @@ angular
             // });
             //view -> model
             ngModel.$parsers.push(function(value) {
-              mxValidation.validate(value, valid, setError);
+              // console.log('$parsers', value)
+              mxValidation.validate({ value: value }, valid, setError);
               return value;
             });
           });
@@ -95,15 +95,20 @@ angular
 
         if (scope.config.expdate) {
           attrs.$observe('expdate', function(value) {
-            mxValidation.validate(value, 'exp_date', setError);
+            // console.log({value: value, expdate: ngModel.$modelValue})
+            mxValidation.validate(
+              { value: value, expdate: scope.model[scope.config.expdate] },
+              'exp_date',
+              setError
+            );
           });
         }
 
         function setError(result, valid) {
           if (result) {
-            mxCheckout.data.valid.iconShow[scope.config.expdate] = false;
+            scope.valid.iconShow[scope.config.expdate] = false;
           } else {
-            mxCheckout.data.valid.errorText[ngModel.$name] =
+            scope.valid.errorText[ngModel.$name] =
               mxCheckoutConfig.error[valid];
           }
           ngModel.$setValidity(valid, result);

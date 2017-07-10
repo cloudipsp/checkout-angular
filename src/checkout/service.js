@@ -16,9 +16,12 @@ angular
         var data = {
           options: angular.extend({}, defaultOptions, globalOptions),
           config: mxCheckoutConfig,
+          formCtrl: {},
+
           card: {},
           emoney: {},
           ibank: {},
+
           loading: true,
           alert: {},
 
@@ -71,27 +74,33 @@ angular
           return deferred.promise;
         }
 
-        function formSubmit(formCtrl, onSubmit, $element) {
-          if (formCtrl.$valid) {
+        function formSubmit(onSubmit, $element, clickButton) {
+          var form = getActiveTab();
+          if (data.formCtrl[form].$valid) {
             onSubmit({
-              formMap: data[getActiveTab()]
+              formMap: data[form]
             });
-            show3DS($element);
-          } else {
+            if (form === 'card') {
+              show3DS($element);
+            }
+          } else if (form === 'card') {
             var autoFocusFlag = true;
             angular.forEach(data.config.formMap, function(field) {
-              if (formCtrl[field].$invalid) {
+              if (data.formCtrl[form][field].$invalid) {
                 if (autoFocusFlag) {
                   autoFocusFlag = false;
                   data.valid.autoFocus[field] = +new Date();
+                  data.valid.iconShow[field] = false;
+                } else {
+                  data.valid.iconShow[field] = true;
                 }
-
-                data.valid.iconShow[field] = true;
               }
             });
-            addAlert(
-              "Please verify that all card information you've provided is accurate and try again"
-            );
+            if (clickButton) {
+              addAlert(
+                "Please verify that all card information you've provided is accurate and try again"
+              );
+            }
           }
         }
 
@@ -234,7 +243,7 @@ angular
 
     return {
       validate: function(value, valid, cb) {
-        var result = _validation[valid]({ value: value });
+        var result = _validation[valid](value);
         cb(result, valid);
         return result;
       }

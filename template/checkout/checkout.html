@@ -1,5 +1,5 @@
 <div class="loading" ng-if="data.loading">Loading...</div>
-<form ng-if="!data.loading" name="cF" ng-submit="formSubmit(cF)" novalidate>
+<div ng-if="!data.loading">
     <uib-accordion>
         <div
                 uib-accordion-group
@@ -19,5 +19,5 @@
     </uib-accordion>
     <div class="lock"><i class="i i-lock"></i> Your payment info is stored securely</div>
     <hr>
-    <div class="text-right"><button type="submit" class="btn btn-primary">Checkout</button></div>
-</form>
+    <div class="text-right"><button type="button" class="btn btn-primary" ng-click="formSubmit(true)">Checkout</button></div>
+</div>
