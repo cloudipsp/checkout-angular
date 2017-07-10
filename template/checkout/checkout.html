@@ -3,21 +3,21 @@
     <uib-accordion>
         <div
                 uib-accordion-group
-                class="panel-default"
+                class="panel {{::data.options.panelClass}}"
                 ng-repeat="tabId in ::data.tabs_order"
                 ng-init="tab = data.tabs[tabId]"
                 is-open="tab.open"
         >
             <uib-accordion-heading ng-click="">
-                <span class="pull-right">
+                <span class="tab-icons">
                     <i class="i i-{{::icon}}" ng-repeat="icon in ::tab.icons" ng-click="stop($event)"></i>
                 </span>
-                <span class="title">{{::tab.name}}</span>
+                {{::tab.name}}
             </uib-accordion-heading>
             <div  ng-include="'mx/template/checkout/' + tab.id + '.html'"></div>
         </div>
     </uib-accordion>
-    <div><i class="glyphicon glyphicon-lock"></i> Your payment info is stored securely</div>
+    <div class="lock"><i class="i i-lock"></i> Your payment info is stored securely</div>
     <hr>
-    <div class="text-right"><button type="submit" class="btn btn-primary btn-lg">Checkout</button></div>
+    <div class="text-right"><button type="submit" class="btn btn-primary">Checkout</button></div>
 </form>

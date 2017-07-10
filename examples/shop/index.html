@@ -136,14 +136,7 @@
         <div class="container">
 
             <div class="row">
-                <div class="col-md-7">
-                    <div class="alert alert-info alert-dismissable">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                        <a href="#">Login</a> or <a href="#">create an account</a> for faster checkout
-                    </div>
-                </div>
-                <div class="clearfix"></div>
-                <div class="col-sm-5 col-sm-push-7 space-left-30">
+                <div class="col-sm-5 space-right-30">
                     <section class="order-summary element-emphasis-weak">
                         <h3 class="strong-header element-header pull-left">
                             Order summary
@@ -181,7 +174,15 @@
                     </section>
                 </div>
                 <div class="clearfix visible-xs space-30"></div>
-                <div class="col-sm-7 col-sm-pull-5">
+                <div class="col-sm-7">
+                    <section class="checkout checkout-step-3 checkout-step-current element-emphasis-strong clearfix">
+                        <h2 class="strong-header element-header">
+                            3. Payment methods
+                        </h2>
+                        <div class="accordion" ng-controller="Demo">
+                            <div mx-checkout on-submit="formSubmit(formMap)"></div>
+                        </div>
+                    </section>
                     <section class="checkout checkout-step-1 checkout-step-previous element-emphasis-weak">
                         <h2 class="strong-header element-header pull-left">
                             1. Billing address
@@ -218,14 +219,6 @@
                             London, NW1 6XE<br>
                             UK
                         </p>
-                    </section>
-                    <section class="checkout checkout-step-3 checkout-step-current element-emphasis-strong clearfix">
-                        <h2 class="strong-header element-header">
-                            3. Payment methods
-                        </h2>
-                        <div class="accordion" ng-controller="Demo">
-                            <div mx-checkout on-submit="formSubmit(formMap)"></div>
-                        </div>
                     </section>
                 </div>
             </div>

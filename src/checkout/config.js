@@ -7,12 +7,13 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       label: true,
       size: '19',
       pattern: '[0-9]{14,19}',
-      // icon: 'glyphicon-credit-card',
       valid: 'ccard,required'
     },
     expireMonth: {
       id: 'expireMonth',
       placeholder: 'MM',
+      text: 'Expiration',
+      label: true,
       size: '2',
       pattern: '[0-9]{2}',
       valid: 'exp_date,required',
@@ -21,6 +22,7 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
     expireYear: {
       id: 'expireYear',
       placeholder: 'YY',
+      label: true,
       size: '2',
       pattern: '[0-9]{2}',
       valid: 'exp_date,required',
@@ -39,6 +41,12 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
     }
   },
   formMap: ['card', 'expireMonth', 'expireYear', 'cvv'],
+  error: {
+    required: 'Required field',
+    ccard: 'Credit card number is invalid',
+    exp_date: 'Invalid expiry date',
+    cvv2: 'Incorrect CVV2 format'
+  },
   defaultData: {
     tabs: {
       card: {

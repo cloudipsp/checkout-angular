@@ -8,7 +8,7 @@ angular
         onSubmit: '&'
       },
       controller: function($scope, mxCheckout, $element, $attrs) {
-        mxCheckout.getData();
+        mxCheckout.init();
 
         $scope.data = mxCheckout.data;
 
@@ -56,7 +56,11 @@ angular
       }
     };
   })
-  .directive('mxFieldValid', function(mxValidation, mxCheckout) {
+  .directive('mxFieldValid', function(
+    mxValidation,
+    mxCheckout,
+    mxCheckoutConfig
+  ) {
     return {
       restrict: 'A',
       require: 'ngModel',
@@ -99,7 +103,8 @@ angular
           if (result) {
             mxCheckout.data.valid.iconShow[scope.config.expdate] = false;
           } else {
-            mxCheckout.data.valid.errorText[ngModel.$name] = 'Error ' + valid;
+            mxCheckout.data.valid.errorText[ngModel.$name] =
+              mxCheckoutConfig.error[valid];
           }
           ngModel.$setValidity(valid, result);
         }

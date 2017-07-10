@@ -6,7 +6,9 @@ angular.module(
 );
 
 angular.module('app').config(function(mxCheckoutProvider) {
+    mxCheckoutProvider.options({
 
+    })
   }
 );
 

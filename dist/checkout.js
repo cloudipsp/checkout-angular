@@ -20,12 +20,13 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       label: true,
       size: '19',
       pattern: '[0-9]{14,19}',
-      // icon: 'glyphicon-credit-card',
       valid: 'ccard,required'
     },
     expireMonth: {
       id: 'expireMonth',
       placeholder: 'MM',
+      text: 'Expiration',
+      label: true,
       size: '2',
       pattern: '[0-9]{2}',
       valid: 'exp_date,required',
@@ -34,6 +35,7 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
     expireYear: {
       id: 'expireYear',
       placeholder: 'YY',
+      label: true,
       size: '2',
       pattern: '[0-9]{2}',
       valid: 'exp_date,required',
@@ -52,6 +54,12 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
     }
   },
   formMap: ['card', 'expireMonth', 'expireYear', 'cvv'],
+  error: {
+    required: 'Required field',
+    ccard: 'Credit card number is invalid',
+    exp_date: 'Invalid expiry date',
+    cvv2: 'Incorrect CVV2 format'
+  },
   defaultData: {
     tabs: {
       card: {
@@ -109,7 +117,7 @@ angular
         onSubmit: '&'
       },
       controller: function($scope, mxCheckout, $element, $attrs) {
-        mxCheckout.getData();
+        mxCheckout.init();
 
         $scope.data = mxCheckout.data;
 
@@ -157,7 +165,11 @@ angular
       }
     };
   })
-  .directive('mxFieldValid', function(mxValidation, mxCheckout) {
+  .directive('mxFieldValid', function(
+    mxValidation,
+    mxCheckout,
+    mxCheckoutConfig
+  ) {
     return {
       restrict: 'A',
       require: 'ngModel',
@@ -200,7 +212,8 @@ angular
           if (result) {
             mxCheckout.data.valid.iconShow[scope.config.expdate] = false;
           } else {
-            mxCheckout.data.valid.errorText[ngModel.$name] = 'Error ' + valid;
+            mxCheckout.data.valid.errorText[ngModel.$name] =
+              mxCheckoutConfig.error[valid];
           }
           ngModel.$setValidity(valid, result);
         }
@@ -219,20 +232,26 @@ angular.module('mx.checkout').filter('trusted', function($sce) {
 angular
   .module('mx.checkout')
   .provider('mxCheckout', function() {
-    var defaultOptions = {};
+    var defaultOptions = {
+      panelClass: 'panel-checkout',
+      alertDangerClass: 'alert-checkout-danger',
+      formControlClass: 'form-control-checkout'
+    };
     var globalOptions = {};
 
     return {
       options: function(value) {
-        angular.extend(globalOptions, defaultOptions, value);
+        angular.extend(globalOptions, value);
       },
       $get: function(mxCheckoutConfig, mxModal, $q) {
         var data = {
+          options: angular.extend({}, defaultOptions, globalOptions),
           config: mxCheckoutConfig,
           card: {},
           emoney: {},
           ibank: {},
           loading: true,
+          alert: {},
 
           valid: {
             errorText: {},
@@ -243,13 +262,20 @@ angular
 
         return {
           data: data,
-          getData: getData,
+          init: init,
           formSubmit: formSubmit,
           stop: stop,
           blur: blur,
           focus: focus,
           selectPaymentSystems: selectPaymentSystems
         };
+
+        function init() {
+          angular.forEach(data.config.fields, function(item) {
+            item.formControlClass = data.options.formControlClass;
+          });
+          getData();
+        }
 
         function getData() {
           data.loading = true;
@@ -281,16 +307,7 @@ angular
             onSubmit({
               formMap: data[getActiveTab()]
             });
-            mxModal
-              .open(
-                {
-                  title: 'Title',
-                  text: 'Text',
-                  type: 'success'
-                },
-                $element
-              )
-              .result.then(function() {}, function() {});
+            show3DS($element);
           } else {
             var autoFocusFlag = true;
             angular.forEach(data.config.formMap, function(field) {
@@ -303,6 +320,9 @@ angular
                 data.valid.iconShow[field] = true;
               }
             });
+            addAlert(
+              "Please verify that all card information you've provided is accurate and try again"
+            );
           }
         }
 
@@ -336,6 +356,26 @@ angular
             }
           });
           return result;
+        }
+
+        function addAlert(text, type) {
+          data.alert = {
+            text: text,
+            type: type || data.options.alertDangerClass
+          };
+        }
+
+        function show3DS($element) {
+          mxModal
+            .open(
+              {
+                title: 'Title',
+                text: 'Text',
+                type: 'success'
+              },
+              $element
+            )
+            .result.then(function() {}, function() {});
         }
       }
     };
@@ -452,30 +492,31 @@ angular.module("mx/template/checkout/card.html", []).run(["$templateCache", func
   $templateCache.put("mx/template/checkout/card.html",
     "<div class=\"row\">\n" +
     "    <div class=\"col-xs-12\">\n" +
-    "        <div ng-if=\"cF.$invalid && cF.$dirty\" class=\"alert alert-danger\" role=\"alert\">Error</div>\n" +
+    "        <div\n" +
+    "                ng-if=\"data.alert.text\"\n" +
+    "                class=\"alert {{data.alert.type}}\"\n" +
+    "                role=\"alert\"\n" +
+    "        ><div class=\"alert-inner\">{{data.alert.text}}</div></div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "<div class=\"row\">\n" +
-    "    <div class=\"col-xs-7\">\n" +
+    "    <div class=\"col-xs-7 col-card\">\n" +
     "        <div mx-field-input=\"data.card\" config=\"data.config.fields.card\" form-ctrl=\"cF\"></div>\n" +
     "    </div>\n" +
     "    <div class=\"col-xs-5\">\n" +
-    "        <div class=\"form-group has-feedback\"\n" +
-    "             ng-class=\"{\n" +
-    "        'has-error': data.valid.iconShow.expireMonth || data.valid.iconShow.expireYear,\n" +
-    "        'has-success': cF.expireMonth.$valid && cF.expireYear.$valid\n" +
-    "    }\"\n" +
-    "        >\n" +
-    "            <label class=\"control-label\" for=\"expireMonth\">Expiration</label>\n" +
-    "            <div class=\"form-inline\">\n" +
+    "        <div class=\"row\">\n" +
+    "            <div class=\"col-xs-6 col-expire-month\">\n" +
     "                <div mx-field-input=\"data.card\" config=\"data.config.fields.expireMonth\" form-ctrl=\"cF\"></div>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-xs-6 col-expire-year\">\n" +
     "                <div mx-field-input=\"data.card\" config=\"data.config.fields.expireYear\" form-ctrl=\"cF\"></div>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
+    "\n" +
     "</div>\n" +
     "<div class=\"row\">\n" +
-    "    <div class=\"col-xs-4\">\n" +
+    "    <div class=\"col-xs-4 col-cvv\">\n" +
     "        <div mx-field-input=\"data.card\" config=\"data.config.fields.cvv\" form-ctrl=\"cF\"></div>\n" +
     "    </div>\n" +
     "</div>");
@@ -489,23 +530,23 @@ angular.module("mx/template/checkout/checkout.html", []).run(["$templateCache", 
     "    <uib-accordion>\n" +
     "        <div\n" +
     "                uib-accordion-group\n" +
-    "                class=\"panel-default\"\n" +
+    "                class=\"panel {{::data.options.panelClass}}\"\n" +
     "                ng-repeat=\"tabId in ::data.tabs_order\"\n" +
     "                ng-init=\"tab = data.tabs[tabId]\"\n" +
     "                is-open=\"tab.open\"\n" +
     "        >\n" +
     "            <uib-accordion-heading ng-click=\"\">\n" +
-    "                <span class=\"pull-right\">\n" +
+    "                <span class=\"tab-icons\">\n" +
     "                    <i class=\"i i-{{::icon}}\" ng-repeat=\"icon in ::tab.icons\" ng-click=\"stop($event)\"></i>\n" +
     "                </span>\n" +
-    "                <span class=\"title\">{{::tab.name}}</span>\n" +
+    "                {{::tab.name}}\n" +
     "            </uib-accordion-heading>\n" +
     "            <div  ng-include=\"'mx/template/checkout/' + tab.id + '.html'\"></div>\n" +
     "        </div>\n" +
     "    </uib-accordion>\n" +
-    "    <div><i class=\"glyphicon glyphicon-lock\"></i> Your payment info is stored securely</div>\n" +
+    "    <div class=\"lock\"><i class=\"i i-lock\"></i> Your payment info is stored securely</div>\n" +
     "    <hr>\n" +
-    "    <div class=\"text-right\"><button type=\"submit\" class=\"btn btn-primary btn-lg\">Checkout</button></div>\n" +
+    "    <div class=\"text-right\"><button type=\"submit\" class=\"btn btn-primary\">Checkout</button></div>\n" +
     "</form>");
 }]);
 
@@ -531,53 +572,44 @@ angular.module("mx/template/checkout/emoney.html", []).run(["$templateCache", fu
 angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("mx/template/checkout/field-input.html",
     "<!--form-group-lg-->\n" +
-    "<!--formCtrl[config.id].$invalid && formCtrl[config.id].$touched-->\n" +
-    "<div class=\"form-group has-feedback\"\n" +
+    "<div class=\"form-group\"\n" +
     "     ng-class=\"{\n" +
     "                'has-error': valid.iconShow[config.id],\n" +
     "                'has-success': formCtrl[config.id].$valid\n" +
     "            }\"\n" +
     ">\n" +
     "    <label\n" +
-    "            class=\"control-label\"\n" +
-    "            for=\"{{::config.id}}\"\n" +
     "            ng-if=\"::config.label\"\n" +
-    "    >{{::config.text}}</label>\n" +
-    "    <i ng-if=\"::config.info\" class=\"glyphicon glyphicon-info-sign\" uib-tooltip=\"{{::config.info}}\" tooltip-placement=\"right\" tooltip-append-to-body=\"true\"></i>\n" +
-    "    <!--input-group-lg-->\n" +
-    "    <div class=\"\" ng-class=\"::{'input-group': config.icon}\">\n" +
-    "        <span ng-if=\"::config.icon\" class=\"input-group-addon\"><i class=\"glyphicon {{::config.icon}}\"></i></span>\n" +
-    "        <input\n" +
-    "                id=\"{{::config.id}}\"\n" +
-    "                name=\"{{::config.id}}\"\n" +
-    "                ng-model=\"model[config.id]\"\n" +
-    "                type=\"tel\"\n" +
-    "                class=\"form-control\"\n" +
-    "                placeholder=\"{{::config.placeholder}}\"\n" +
-    "                ng-pattern=\"::config.pattern\"\n" +
+    "    ><span>{{::config.text}}&nbsp;</span>\n" +
+    "        <i ng-if=\"::config.info\" class=\"i i-i\" uib-tooltip=\"{{::config.info}}\" tooltip-placement=\"right\" tooltip-append-to-body=\"true\"></i>\n" +
+    "    <input\n" +
     "\n" +
-    "                size=\"{{::config.size}}\"\n" +
-    "                maxlength=\"{{::config.size}}\"\n" +
-    "                autocomplete=\"off\"\n" +
-    "                auto-focus=\"valid.autoFocus[config.id]\"\n" +
+    "            name=\"{{::config.id}}\"\n" +
+    "            ng-model=\"model[config.id]\"\n" +
+    "            type=\"tel\"\n" +
+    "            class=\"form-control {{::config.formControlClass}}\"\n" +
     "\n" +
-    "                mx-field-valid=\"config\"\n" +
-    "                expdate=\"{{model[config.expdate]}}\"\n" +
+    "            placeholder=\"{{::config.placeholder}}\"\n" +
+    "            ng-pattern=\"::config.pattern\"\n" +
     "\n" +
-    "                ng-blur=\"blur(formCtrl[config.id])\"\n" +
-    "                ng-focus=\"focus(formCtrl[config.id])\"\n" +
+    "            size=\"{{::config.size}}\"\n" +
+    "            maxlength=\"{{::config.size}}\"\n" +
+    "            autocomplete=\"off\"\n" +
+    "            auto-focus=\"valid.autoFocus[config.id]\"\n" +
     "\n" +
-    "                uib-tooltip=\"{{valid.errorText[config.id]}}\"\n" +
-    "                tooltip-placement=\"bottom\"\n" +
-    "                tooltip-trigger=\"'focus'\"\n" +
-    "                tooltip-enable=\"{{formCtrl[config.id].$invalid}}\"\n" +
-    "        >\n" +
-    "    </div>\n" +
-    "    <!--&& formCtrl[config.id].$touched-->\n" +
-    "    <span class=\"glyphicon glyphicon-exclamation-sign form-control-feedback\"\n" +
-    "          ng-if=\"valid.iconShow[config.id]\"\n" +
-    "    ></span>\n" +
-    "    <span class=\"glyphicon glyphicon-ok form-control-feedback\" ng-if=\"formCtrl[config.id].$valid\"></span>\n" +
+    "            mx-field-valid=\"config\"\n" +
+    "            expdate=\"{{model[config.expdate]}}\"\n" +
+    "\n" +
+    "            ng-blur=\"blur(formCtrl[config.id])\"\n" +
+    "            ng-focus=\"focus(formCtrl[config.id])\"\n" +
+    "\n" +
+    "            uib-tooltip=\"{{valid.errorText[config.id]}}\"\n" +
+    "            tooltip-placement=\"bottom\"\n" +
+    "            tooltip-append-to-body=\"true\"\n" +
+    "            tooltip-trigger=\"'focus'\"\n" +
+    "            tooltip-enable=\"{{formCtrl[config.id].$invalid}}\"\n" +
+    "    >\n" +
+    "    </label>\n" +
     "</div>");
 }]);
 

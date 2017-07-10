@@ -63,7 +63,7 @@ module.exports = function (grunt) {
           rootpath: '..',
           sourceMapRootpath: '..'
         },
-        src: ['src/index.less'],
+        src: ['assets/index.less'],
         dest: 'dist/checkout.css'
       },
       dist: {
@@ -88,7 +88,7 @@ module.exports = function (grunt) {
         spawn: false
       },
       less: {
-        files: ['src/**/*.less'],
+        files: ['assets/**/*.less'],
         tasks: ['less:dev']
       },
       checkout: {

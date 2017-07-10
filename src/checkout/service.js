@@ -1,20 +1,26 @@
 angular
   .module('mx.checkout')
   .provider('mxCheckout', function() {
-    var defaultOptions = {};
+    var defaultOptions = {
+      panelClass: 'panel-checkout',
+      alertDangerClass: 'alert-checkout-danger',
+      formControlClass: 'form-control-checkout'
+    };
     var globalOptions = {};
 
     return {
       options: function(value) {
-        angular.extend(globalOptions, defaultOptions, value);
+        angular.extend(globalOptions, value);
       },
       $get: function(mxCheckoutConfig, mxModal, $q) {
         var data = {
+          options: angular.extend({}, defaultOptions, globalOptions),
           config: mxCheckoutConfig,
           card: {},
           emoney: {},
           ibank: {},
           loading: true,
+          alert: {},
 
           valid: {
             errorText: {},
@@ -25,13 +31,20 @@ angular
 
         return {
           data: data,
-          getData: getData,
+          init: init,
           formSubmit: formSubmit,
           stop: stop,
           blur: blur,
           focus: focus,
           selectPaymentSystems: selectPaymentSystems
         };
+
+        function init() {
+          angular.forEach(data.config.fields, function(item) {
+            item.formControlClass = data.options.formControlClass;
+          });
+          getData();
+        }
 
         function getData() {
           data.loading = true;
@@ -63,16 +76,7 @@ angular
             onSubmit({
               formMap: data[getActiveTab()]
             });
-            mxModal
-              .open(
-                {
-                  title: 'Title',
-                  text: 'Text',
-                  type: 'success'
-                },
-                $element
-              )
-              .result.then(function() {}, function() {});
+            show3DS($element);
           } else {
             var autoFocusFlag = true;
             angular.forEach(data.config.formMap, function(field) {
@@ -85,6 +89,9 @@ angular
                 data.valid.iconShow[field] = true;
               }
             });
+            addAlert(
+              "Please verify that all card information you've provided is accurate and try again"
+            );
           }
         }
 
@@ -118,6 +125,26 @@ angular
             }
           });
           return result;
+        }
+
+        function addAlert(text, type) {
+          data.alert = {
+            text: text,
+            type: type || data.options.alertDangerClass
+          };
+        }
+
+        function show3DS($element) {
+          mxModal
+            .open(
+              {
+                title: 'Title',
+                text: 'Text',
+                type: 'success'
+              },
+              $element
+            )
+            .result.then(function() {}, function() {});
         }
       }
     };
