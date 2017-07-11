@@ -13,6 +13,13 @@ angular.module('app').config(function(mxCheckoutProvider) {
 );
 
 angular.module('app').controller('Demo', function($scope) {
+  $scope.checkoutOptions = {
+    panelClass: 'panel-default',
+    alertDangerClass: 'alert-danger',
+    formControlClass: 'form-control',
+    btnClass: 'btn-success'
+  };
+
   $scope.formSubmit = function(formMap){
     console.log(formMap)
   };

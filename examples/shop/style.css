@@ -1501,10 +1501,10 @@ footer form .form-group {
 }
 .accordion .panel-group .panel-heading a {
   display: block;
-  padding: 15px 15px 16px 29px;
+  padding: 15px;
   border: none;
 }
-/*.accordion .panel-group .panel-heading a:after {
+.accordion .panel-group .panel-heading a:before {
   content: '';
   position: relative;
   top: 5px;
@@ -1514,23 +1514,23 @@ footer form .form-group {
   float: right;
   -webkit-transition: height .5s ease, top .5s ease;
   transition: height .5s ease, top .5s ease;
-  background: url("../images/accordion-plus.png") no-repeat center center;
-}*/
-.accordion .panel-group .panel-heading.active {
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAACpJREFUeNpiPHPmDAMa+A+lGZEFmRiIBNRXyILkJlxuJd1ExkHua4AAAwDFXwZ7Ym7c7QAAAABJRU5ErkJggg==') no-repeat center center;
+}
+.accordion .panel-group .panel-open .panel-heading {
   color: #1a1a1a;
 }
-.accordion .panel-group .panel-heading.active a {
+.accordion .panel-group .panel-open .panel-heading a {
   -webkit-transition: color 0.3s ease;
   transition: color 0.3s ease;
 }
-/*.accordion .panel-group .panel-heading.active a:after {
+.accordion .panel-group .panel-open .panel-heading a:before {
   height: 2px;
   top: 9px;
 }
-.accordion .panel-group .panel-heading.active a:hover:after {
+.accordion .panel-group .panel-open .panel-heading a:hover:before {
   height: 2px;
   top: 9px;
-}*/
+}
 .accordion .panel-group .panel-collapse .panel-body {
   padding-top: 6px;
   /*padding-bottom: 0;*/

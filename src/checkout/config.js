@@ -17,7 +17,8 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       size: '2',
       pattern: '[0-9]{2}',
       valid: 'exp_date,required',
-      expdate: 'expireYear'
+      bind: 'expireYear',
+      format: 'month'
     },
     expireYear: {
       id: 'expireYear',
@@ -26,7 +27,8 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       size: '2',
       pattern: '[0-9]{2}',
       valid: 'exp_date,required',
-      expdate: 'expireMonth'
+      bind: 'expireMonth',
+      format: 'year'
     },
     cvv: {
       id: 'cvv',

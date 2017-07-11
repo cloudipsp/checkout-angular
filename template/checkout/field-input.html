@@ -13,7 +13,7 @@
             name="{{::config.id}}"
             ng-model="model[config.id]"
             type="tel"
-            class="form-control {{::config.formControlClass}}"
+            class="{{::config.formControlClass}}"
 
             placeholder="{{::config.placeholder}}"
             ng-pattern="::config.pattern"
@@ -26,7 +26,7 @@
             model="model"
             config="config"
             mx-field-valid="valid"
-            expdate="{{model[config.expdate]}}"
+            bind="{{model[config.bind]}}"
 
             ng-blur="blur({inputCtrl: formCtrl[config.id]})"
             ng-focus="focus({inputCtrl: formCtrl[config.id]})"

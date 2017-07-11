@@ -1,26 +1,14 @@
 angular
   .module('mx.checkout')
-  .directive('mxCheckout', function() {
+  .directive('mxCheckout', function(mxCheckout) {
     return {
       restrict: 'A',
       templateUrl: 'mx/template/checkout/checkout.html',
       scope: {
+        mxCheckoutOptions: '=?',
         onSubmit: '&'
       },
-      controller: function($scope, mxCheckout, $element, $attrs) {
-        mxCheckout.init();
-
-        $scope.data = mxCheckout.data;
-
-        $scope.formSubmit = function(clickButton) {
-          return mxCheckout.formSubmit($scope.onSubmit, $element, clickButton);
-        };
-
-        $scope.selectPaymentSystems = mxCheckout.selectPaymentSystems;
-        $scope.stop = mxCheckout.stop;
-        $scope.blur = mxCheckout.blur;
-        $scope.focus = mxCheckout.focus;
-      }
+      controller: mxCheckout.controller
     };
   })
   .directive('mxFieldInput', function() {
@@ -68,45 +56,64 @@ angular
       link: function(scope, element, attrs, ngModel) {
         if (scope.config.valid) {
           angular.forEach(scope.config.valid.split(','), function(valid) {
-            mxValidation.validate(ngModel.$modelValue, valid, setError);
+            // валидируем при инициализации
+            // console.log('init ' + ngModel.$name + ' ' + valid)
+            validate(
+              valid,
+              ngModel.$modelValue,
+              scope.model[scope.config.bind],
+              setError
+            );
+
+            // когда поле валидно убираем tooltip
             scope.$watch(
               function() {
                 return ngModel.$modelValue;
               },
               function(value) {
-                // console.log('$watch', value)
-                mxValidation.validate({ value: value }, valid, setError);
+                if (ngModel.$valid) {
+                  scope.valid.errorText[ngModel.$name] = '';
+                }
               },
               true
             );
 
-            // ngModel.$formatters.push(function(value) {
-            //   mxValidation.validate(value, valid, setError);
-            //   return value;
-            // });
             //view -> model
             ngModel.$parsers.push(function(value) {
-              // console.log('$parsers', value)
-              mxValidation.validate({ value: value }, valid, setError);
+              // console.log('$parsers ' + ngModel.$name + ' ' + valid)
+              validate(valid, value, scope.model[scope.config.bind], setError);
               return value;
             });
           });
         }
 
-        if (scope.config.expdate) {
-          attrs.$observe('expdate', function(value) {
-            // console.log({value: value, expdate: ngModel.$modelValue})
-            mxValidation.validate(
-              { value: value, expdate: scope.model[scope.config.expdate] },
-              'exp_date',
-              setError
-            );
+        if (scope.config.bind) {
+          attrs.$observe('bind', function(value) {
+            // console.log('$observe ' + scope.config.bind + ' exp_date')
+            validate('exp_date', ngModel.$modelValue, value, function(
+              result,
+              valid
+            ) {
+              ngModel.$setValidity(valid, result);
+            });
           });
+        }
+
+        function validate(valid, value, bind, cb) {
+          mxValidation.validate(
+            {
+              value: value,
+              config: scope.config,
+              bind: bind
+            },
+            valid,
+            cb
+          );
         }
 
         function setError(result, valid) {
           if (result) {
-            scope.valid.iconShow[scope.config.expdate] = false;
+            scope.valid.iconShow[scope.config.bind] = false;
           } else {
             scope.valid.errorText[ngModel.$name] =
               mxCheckoutConfig.error[valid];

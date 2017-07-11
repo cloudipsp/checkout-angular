@@ -9,8 +9,9 @@ angular.module(
 angular.module('app').config(function(mxCheckoutProvider) {
     mxCheckoutProvider.options({
       panelClass: 'panel-default',
-      alertDangerClass: 'alert-danger'
-      // formControlClass: ''
+      alertDangerClass: 'alert-danger',
+      formControlClass: 'form-control',
+      btnClass: 'btn-success'
     })
   }
 );

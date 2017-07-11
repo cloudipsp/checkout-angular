@@ -16,8 +16,10 @@
 </head>
 <body ng-controller="Demo">
   <div class="container">
-    <h1 class="text-center">Checkout</h1>
+    <h2 class="text-center">Facebook style</h2>
     <div mx-checkout on-submit="formSubmit(formMap)"></div>
+    <h2 class="text-center">Bootstrap default style</h2>
+    <div mx-checkout on-submit="formSubmit(formMap)" mx-checkout-options="checkoutOptions"></div>
   </div>
 </body>
 </html>
