@@ -656,7 +656,7 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
     "\n" +
     "            uib-tooltip=\"{{valid.errorText[config.id]}}\"\n" +
     "            tooltip-placement=\"right\"\n" +
-    "            tooltip-trigger=\"{'mouseenter': 'mouseleave', 'none': 'click'}\"\n" +
+    "            tooltip-trigger=\"{'mouseenter': 'mouseleave', 'none': 'focus'}\"\n" +
     "            tooltip-enable=\"{{valid.iconShow[config.id]}}\"\n" +
     "            tooltip-append-to-body=\"true\"\n" +
     "            tooltip-class=\"{{::config.tooltipClass}}\"\n" +
