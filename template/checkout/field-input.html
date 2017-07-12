@@ -21,7 +21,7 @@
             size="{{::config.size}}"
             maxlength="{{::config.size}}"
             autocomplete="off"
-            auto-focus="valid.autoFocus[config.id]"
+            mx-auto-focus="valid.autoFocus[config.id]"
 
             model="model"
             config="config"
@@ -32,9 +32,12 @@
             ng-focus="focus({inputCtrl: formCtrl[config.id]})"
 
             uib-tooltip="{{valid.errorText[config.id]}}"
-            tooltip-placement="bottom"
-            tooltip-trigger="'focus'"
-            tooltip-enable="{{formCtrl[config.id].$invalid}}"
+            tooltip-placement="right"
+            tooltip-trigger="{'mouseenter': 'mouseleave', 'none': 'click'}"
+            tooltip-enable="{{valid.iconShow[config.id]}}"
+            tooltip-append-to-body="true"
+            tooltip-class="{{::config.tooltipClass}}"
+            tooltip-animation="false"
     >
     </label>
 </div>

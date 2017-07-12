@@ -137,12 +137,12 @@ angular
       }
     };
   })
-  .directive('autoFocus', function($timeout) {
+  .directive('mxAutoFocus', function($timeout) {
     return {
       restrict: 'A',
       link: function(scope, element, attrs, ngModel) {
         scope.$watch(
-          attrs.autoFocus,
+          attrs.mxAutoFocus,
           function(val) {
             if (angular.isDefined(val) && val) {
               $timeout(function() {
@@ -250,7 +250,8 @@ angular
       panelClass: 'panel-checkout',
       alertDangerClass: 'alert-checkout-danger',
       formControlClass: 'form-control form-control-checkout',
-      btnClass: 'btn-primary'
+      btnClass: 'btn-primary',
+      tooltipClass: 'tooltip-checkout'
     };
     var globalOptions = {};
 
@@ -260,125 +261,133 @@ angular
       },
       $get: function($q, mxModal) {
         return {
-          controller: function($scope, mxCheckoutConfig, $element, mxCheckout) {
-            $scope.data = {
-              options: angular.extend(
-                {},
-                defaultOptions,
-                globalOptions,
-                $scope.mxCheckoutOptions
-              ),
-              config: angular.merge({}, mxCheckoutConfig),
-              formCtrl: {},
+          controller: [
+            '$scope',
+            'mxCheckoutConfig',
+            '$element',
+            'mxCheckout',
+            function($scope, mxCheckoutConfig, $element, mxCheckout) {
+              $scope.data = {
+                options: angular.extend(
+                  {},
+                  defaultOptions,
+                  globalOptions,
+                  $scope.mxCheckoutOptions
+                ),
+                config: angular.merge({}, mxCheckoutConfig),
+                formCtrl: {},
 
-              card: {},
-              emoney: {},
-              ibank: {},
+                card: {},
+                emoney: {},
+                ibank: {},
 
-              loading: true,
-              alert: {},
+                loading: true,
+                alert: {},
 
-              valid: {
-                errorText: {},
-                iconShow: {},
-                autoFocus: {}
+                valid: {
+                  errorText: {},
+                  iconShow: {},
+                  autoFocus: {}
+                }
+              };
+
+              $scope.formSubmit = formSubmit;
+              $scope.stop = mxCheckout.stop;
+              $scope.blur = blur;
+              $scope.focus = focus;
+              $scope.selectPaymentSystems = selectPaymentSystems;
+
+              angular.forEach($scope.data.config.fields, function(item) {
+                item.formControlClass = $scope.data.options.formControlClass;
+                item.tooltipClass = $scope.data.options.tooltipClass;
+              });
+              getData();
+
+              function getData() {
+                $scope.data.loading = true;
+                mxCheckout.request($scope.data.config.getData).then(
+                  function(response) {
+                    angular.merge(
+                      $scope.data,
+                      $scope.data.config.defaultData,
+                      response
+                    );
+                    $scope.data.tabs[$scope.data.active_tab].open = true;
+
+                    $scope.data.loading = false;
+                  },
+                  function(error) {
+                    $scope.data.loading = false;
+                  }
+                );
               }
-            };
 
-            $scope.formSubmit = formSubmit;
-            $scope.stop = mxCheckout.stop;
-            $scope.blur = blur;
-            $scope.focus = focus;
-            $scope.selectPaymentSystems = selectPaymentSystems;
-
-            angular.forEach($scope.data.config.fields, function(item) {
-              item.formControlClass = $scope.data.options.formControlClass;
-            });
-            getData();
-
-            function getData() {
-              $scope.data.loading = true;
-              mxCheckout.request($scope.data.config.getData).then(
-                function(response) {
-                  angular.merge(
-                    $scope.data,
-                    $scope.data.config.defaultData,
-                    response
-                  );
-                  $scope.data.tabs[$scope.data.active_tab].open = true;
-
-                  $scope.data.loading = false;
-                },
-                function(error) {
-                  $scope.data.loading = false;
-                }
-              );
-            }
-
-            function formSubmit(clickButton) {
-              var form = getActiveTab();
-              if ($scope.data.formCtrl[form].$valid) {
-                $scope.onSubmit({
-                  formMap: $scope.data[form]
-                });
-                if (form === 'card') {
-                  mxCheckout.show3DS($element);
-                }
-              } else if (form === 'card') {
-                var autoFocusFlag = true;
-                angular.forEach($scope.data.config.formMap, function(field) {
-                  if ($scope.data.formCtrl[form][field].$invalid) {
-                    if (autoFocusFlag) {
-                      autoFocusFlag = false;
-                      $scope.data.valid.autoFocus[field] = +new Date();
-                      $scope.data.valid.iconShow[field] = false;
-                    } else {
-                      $scope.data.valid.iconShow[field] = true;
+              function formSubmit(clickButton) {
+                var form = getActiveTab();
+                if ($scope.data.formCtrl[form].$valid) {
+                  $scope.onSubmit({
+                    formMap: $scope.data[form]
+                  });
+                  if (form === 'card') {
+                    mxCheckout.show3DS($element);
+                  }
+                } else if (form === 'card') {
+                  var autoFocusFlag = true;
+                  angular.forEach($scope.data.config.formMap, function(field) {
+                    if ($scope.data.formCtrl[form][field].$invalid) {
+                      if (autoFocusFlag) {
+                        autoFocusFlag = false;
+                        $scope.data.valid.autoFocus[field] = +new Date();
+                        $scope.data.valid.iconShow[field] = false;
+                      } else {
+                        $scope.data.valid.iconShow[field] = true;
+                      }
                     }
+                  });
+                  if (clickButton) {
+                    addAlert(
+                      "Please verify that all card information you've provided is accurate and try again"
+                    );
+                  }
+                }
+              }
+
+              function blur(inputCtrl) {
+                if (inputCtrl.$invalid) {
+                  $scope.data.valid.iconShow[inputCtrl.$name] = true;
+                }
+              }
+
+              function focus(inputCtrl) {
+                if (inputCtrl.$invalid) {
+                  $scope.data.valid.iconShow[inputCtrl.$name] = false;
+                  // $scope.data.valid.errorText[inputCtrl.$name] = '';
+                }
+              }
+
+              function selectPaymentSystems(tab, id) {
+                tab.selected = id;
+                $scope.data[tab.id].type = id;
+              }
+
+              function getActiveTab() {
+                var result;
+                angular.forEach($scope.data.tabs, function(tab) {
+                  if (tab.open) {
+                    result = tab.id;
                   }
                 });
-                if (clickButton) {
-                  addAlert(
-                    "Please verify that all card information you've provided is accurate and try again"
-                  );
-                }
+                return result;
+              }
+
+              function addAlert(text, type) {
+                $scope.data.alert = {
+                  text: text,
+                  type: type || $scope.data.options.alertDangerClass
+                };
               }
             }
-
-            function blur(inputCtrl) {
-              if (inputCtrl.$invalid) {
-                $scope.data.valid.iconShow[inputCtrl.$name] = true;
-              }
-            }
-
-            function focus(inputCtrl) {
-              if (inputCtrl.$invalid) {
-                $scope.data.valid.iconShow[inputCtrl.$name] = false;
-              }
-            }
-
-            function selectPaymentSystems(tab, id) {
-              tab.selected = id;
-              $scope.data[tab.id].type = id;
-            }
-
-            function getActiveTab() {
-              var result;
-              angular.forEach($scope.data.tabs, function(tab) {
-                if (tab.open) {
-                  result = tab.id;
-                }
-              });
-              return result;
-            }
-
-            function addAlert(text, type) {
-              $scope.data.alert = {
-                text: text,
-                type: type || $scope.data.options.alertDangerClass
-              };
-            }
-          },
+          ],
           request: function(response) {
             var deferred = $q.defer();
 
@@ -635,7 +644,7 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
     "            size=\"{{::config.size}}\"\n" +
     "            maxlength=\"{{::config.size}}\"\n" +
     "            autocomplete=\"off\"\n" +
-    "            auto-focus=\"valid.autoFocus[config.id]\"\n" +
+    "            mx-auto-focus=\"valid.autoFocus[config.id]\"\n" +
     "\n" +
     "            model=\"model\"\n" +
     "            config=\"config\"\n" +
@@ -646,9 +655,12 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
     "            ng-focus=\"focus({inputCtrl: formCtrl[config.id]})\"\n" +
     "\n" +
     "            uib-tooltip=\"{{valid.errorText[config.id]}}\"\n" +
-    "            tooltip-placement=\"bottom\"\n" +
-    "            tooltip-trigger=\"'focus'\"\n" +
-    "            tooltip-enable=\"{{formCtrl[config.id].$invalid}}\"\n" +
+    "            tooltip-placement=\"right\"\n" +
+    "            tooltip-trigger=\"{'mouseenter': 'mouseleave', 'none': 'click'}\"\n" +
+    "            tooltip-enable=\"{{valid.iconShow[config.id]}}\"\n" +
+    "            tooltip-append-to-body=\"true\"\n" +
+    "            tooltip-class=\"{{::config.tooltipClass}}\"\n" +
+    "            tooltip-animation=\"false\"\n" +
     "    >\n" +
     "    </label>\n" +
     "</div>");

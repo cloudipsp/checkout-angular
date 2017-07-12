@@ -26,12 +26,12 @@ angular
       }
     };
   })
-  .directive('autoFocus', function($timeout) {
+  .directive('mxAutoFocus', function($timeout) {
     return {
       restrict: 'A',
       link: function(scope, element, attrs, ngModel) {
         scope.$watch(
-          attrs.autoFocus,
+          attrs.mxAutoFocus,
           function(val) {
             if (angular.isDefined(val) && val) {
               $timeout(function() {

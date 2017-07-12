@@ -11,7 +11,8 @@ angular.module('app').config(function(mxCheckoutProvider) {
       panelClass: 'panel-default',
       alertDangerClass: 'alert-danger',
       formControlClass: 'form-control',
-      btnClass: 'btn-success'
+      btnClass: 'btn-success',
+      tooltipClass: ''
     })
   }
 );

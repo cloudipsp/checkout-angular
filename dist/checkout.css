@@ -26,10 +26,6 @@
 .panel-checkout .panel-body {
   padding: 6px 15px 12px 29px;
 }
-.panel-checkout .tab-icons {
-  margin-top: -3px;
-  transition: margin-top 0.3s linear;
-}
 .panel-checkout .panel-title {
   position: relative;
   font-size: 14px;
@@ -72,9 +68,6 @@
 }
 .panel-checkout.panel-open .panel-heading {
   border: none;
-}
-.panel-checkout.panel-open .tab-icons {
-  margin-top: 0;
 }
 .panel-checkout.panel-open .panel-title > a:after {
   border: 3px solid #666d7a;
@@ -129,6 +122,28 @@
 .has-error .form-control-checkout {
   border-color: #fa3e3e;
   background: #ffffff url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAclBMVEXXCADYAwDXBgDXAgDXAAjWAATWAgBMaXHXBgDjABzXBADXAQDYAwDWAATXBgDWAALXBQDWBwDVAAPWAADTAADdAADWAALfAADXAALWAAXXAwDTAADXBgDXAADTAAnWAAjXAQDXAATXAQDWAgDYAADXAQBZklmMAAAAJnRSTlPgwtqnIEWcANgJyLPEddmD0NZJnUYPcRBycME615o6H8B0rp0hsUJeF3oAAAB1SURBVHheXcxHEoMwAMVQAcbfppf0Xu9/xYxnIInR8i2EFs1wOcZwPTkTwRnsP+QA+Q/8rarr6uC/sKeUSjYzGEchFTgzgYVUSmEMMB23a4BVAJ8AZBlA4oV2AE3bNgB3YRxAJ3UA7oUl1A9DT+jJg6g3WvQB/7UG/hDbeNQAAAAASUVORK5CYII=") no-repeat right 8px center;
+}
+.tooltip-checkout .tooltip-inner {
+  background: #fff;
+  border: 1px solid #fa3e3e;
+  color: #fa3e3e;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+.tooltip-checkout.right {
+  padding: 0 4px;
+}
+.tooltip-checkout.right .tooltip-arrow {
+  margin-top: -5px;
+  border: 1px solid #fa3e3e;
+  border-top: none;
+  border-right: none;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  transform: rotate(45deg);
+}
+.tooltip-checkout.in {
+  opacity: 1;
 }
 [mx-checkout] {
   max-width: 400px;

@@ -17,7 +17,8 @@ angular.module('app').controller('Demo', function($scope) {
     panelClass: 'panel-default',
     alertDangerClass: 'alert-danger',
     formControlClass: 'form-control',
-    btnClass: 'btn-success'
+    btnClass: 'btn-success',
+    tooltipClass: ''
   };
 
   $scope.formSubmit = function(formMap){
