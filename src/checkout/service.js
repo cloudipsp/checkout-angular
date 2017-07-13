@@ -5,7 +5,7 @@ angular
       panelClass: 'panel-checkout',
       alertDangerClass: 'alert-checkout-danger',
       formControlClass: 'form-control form-control-checkout',
-      btnClass: 'btn-primary',
+      btnClass: 'btn-checkout',
       tooltipClass: 'tooltip-checkout'
     };
     var globalOptions = {};
