@@ -111,7 +111,7 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
 ;
 angular
   .module('mx.checkout')
-  .directive('mxCheckout', function(mxCheckout) {
+  .directive('mxCheckout', ['mxCheckout', function(mxCheckout) {
     return {
       restrict: 'A',
       templateUrl: 'mx/template/checkout/checkout.html',
@@ -121,7 +121,7 @@ angular
       },
       controller: mxCheckout.controller
     };
-  })
+  }])
   .directive('mxFieldInput', function() {
     return {
       restrict: 'A',
@@ -137,7 +137,7 @@ angular
       }
     };
   })
-  .directive('mxAutoFocus', function($timeout) {
+  .directive('mxAutoFocus', ['$timeout', function($timeout) {
     return {
       restrict: 'A',
       link: function(scope, element, attrs, ngModel) {
@@ -154,8 +154,8 @@ angular
         );
       }
     };
-  })
-  .directive('mxFieldValid', function(mxValidation, mxCheckoutConfig) {
+  }])
+  .directive('mxFieldValid', ['mxValidation', 'mxCheckoutConfig', function(mxValidation, mxCheckoutConfig) {
     return {
       restrict: 'A',
       require: 'ngModel',
@@ -233,14 +233,14 @@ angular
         }
       }
     };
-  });
+  }]);
 
 ;
-angular.module('mx.checkout').filter('trusted', function($sce) {
+angular.module('mx.checkout').filter('trusted', ['$sce', function($sce) {
   return function(url) {
     return $sce.trustAsResourceUrl(url);
   };
-});
+}]);
 
 ;
 angular
@@ -259,7 +259,7 @@ angular
       options: function(value) {
         angular.extend(globalOptions, value);
       },
-      $get: function($q, mxModal) {
+      $get: ['$q', 'mxModal', function($q, mxModal) {
         return {
           controller: [
             '$scope',
@@ -414,7 +414,7 @@ angular
             $event.stopPropagation();
           }
         };
-      }
+      }]
     };
   })
   .factory('mxValidation', function() {
@@ -510,21 +510,21 @@ angular
       }
     };
   })
-  .factory('mxModal', function($uibModal) {
+  .factory('mxModal', ['$uibModal', function($uibModal) {
     return {
       open: function(option, $element) {
         return $uibModal.open({
           templateUrl: 'mx/template/checkout/modal.html',
-          controller: function($scope, $uibModalInstance) {
+          controller: ['$scope', '$uibModalInstance', function($scope, $uibModalInstance) {
             $scope.option = option;
 
             $scope.url = '';
-          },
+          }],
           appendTo: $element
         });
       }
     };
-  });
+  }]);
 
 ;
 angular.module("mx/template/checkout/card.html", []).run(["$templateCache", function ($templateCache) {
