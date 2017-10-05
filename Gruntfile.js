@@ -122,7 +122,8 @@ module.exports = function (grunt) {
     prettier: {
       base: {
         options: {
-          singleQuote: true
+          singleQuote: true,
+          printWidth: 120
         },
         src: [
           'src/**/*.js'

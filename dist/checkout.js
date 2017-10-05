@@ -1036,7 +1036,8 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
     required: 'Required field',
     ccard: 'Credit card number is invalid',
     exp_date: 'Invalid expiry date',
-    cvv2: 'Incorrect CVV2 format'
+    cvv2: 'Incorrect CVV2 format',
+    card: "Please verify that all card information you've provided is accurate and try again"
   },
   tabs: {
     card: {
@@ -1186,10 +1187,7 @@ angular
         if (scope.config.bind) {
           attrs.$observe('bind', function(value) {
             // console.log('$observe ' + scope.config.bind + ' exp_date')
-            validate('exp_date', ngModel.$modelValue, value, function(
-              result,
-              valid
-            ) {
+            validate('exp_date', ngModel.$modelValue, value, function(result, valid) {
               ngModel.$setValidity(valid, result);
             });
           });
@@ -1211,8 +1209,7 @@ angular
           if (result) {
             scope.valid.iconShow[scope.config.bind] = false;
           } else {
-            scope.valid.errorText[ngModel.$name] =
-              mxCheckoutConfig.error[valid];
+            scope.valid.errorText[ngModel.$name] = mxCheckoutConfig.error[valid];
           }
           ngModel.$setValidity(valid, result);
         }
@@ -1249,7 +1246,7 @@ angular
       options: function(value) {
         angular.extend(globalOptions, value);
       },
-      $get: function($q) {
+      $get: function() {
         return {
           controller: [
             '$scope',
@@ -1257,7 +1254,7 @@ angular
             '$element',
             'mxCheckout',
             function($scope, mxCheckoutConfig, $element, mxCheckout) {
-              var api = $checkout('Api');
+              var api = $checkout('Api').setOrigin('https://api.fondy.eu');
 
               $scope.data = {
                 options: getOption(),
@@ -1308,7 +1305,7 @@ angular
                 });
               }
 
-              function formSubmit(clickButton) {
+              function formSubmit() {
                 var tab = getActiveTab();
                 if ($scope.data.formCtrl[tab.id].$valid) {
                   if ($scope.data.disabled) return;
@@ -1316,11 +1313,7 @@ angular
                   $scope.data.alert[tab.id] = {};
 
                   api.scope(function() {
-                    this.request(
-                      'api.checkout.form',
-                      'request',
-                      $scope.data[tab]
-                    )
+                    this.request('api.checkout.form', 'request', $scope.data[tab.id])
                       .done(function(model) {
                         $scope.onSuccess({
                           response: model
@@ -1331,13 +1324,7 @@ angular
                       })
                       .fail(function(model) {
                         $scope.data.disabled = false;
-                        addAlert(
-                          tab,
-                          [
-                            model.attr('error.code'),
-                            model.attr('error.message')
-                          ].join(' ')
-                        );
+                        addAlert(tab.id, [model.attr('error.code'), model.attr('error.message')].join(' '));
                         $scope.onError({
                           response: model
                         });
@@ -1347,28 +1334,20 @@ angular
                 } else {
                   var autoFocusFlag = true;
                   if (tab.selected) {
-                    angular.forEach(
-                      tab.payment_systems[tab.selected].formMap,
-                      function(field) {
-                        if ($scope.data.formCtrl[tab.id][field].$invalid) {
-                          if (autoFocusFlag) {
-                            autoFocusFlag = false;
-                            $scope.data.valid[tab.id].autoFocus[
-                              field
-                            ] = +new Date();
-                            $scope.data.valid[tab.id].iconShow[field] = false;
-                          } else {
-                            $scope.data.valid[tab.id].iconShow[field] = true;
-                          }
+                    angular.forEach(tab.payment_systems[tab.selected].formMap, function(field) {
+                      if ($scope.data.formCtrl[tab.id][field].$invalid) {
+                        if (autoFocusFlag) {
+                          autoFocusFlag = false;
+                          $scope.data.valid[tab.id].autoFocus[field] = +new Date();
+                          $scope.data.valid[tab.id].iconShow[field] = false;
+                        } else {
+                          $scope.data.valid[tab.id].iconShow[field] = true;
                         }
                       }
-                    );
+                    });
                   }
-                  if (clickButton && tab.id === 'card') {
-                    addAlert(
-                      tab.id,
-                      "Please verify that all card information you've provided is accurate and try again"
-                    );
+                  if (tab.id === 'card') {
+                    addAlert(tab.id, $scope.data.config.error.card);
                   }
                 }
               }
@@ -1382,7 +1361,6 @@ angular
               function focus(inputCtrl, tab) {
                 if (inputCtrl.$invalid) {
                   $scope.data.valid[tab].iconShow[inputCtrl.$name] = false;
-                  // $scope.data.valid.errorText[inputCtrl.$name] = '';
                 }
               }
 
@@ -1409,41 +1387,23 @@ angular
               }
 
               function getOption() {
-                var _options = angular.extend(
-                  {},
-                  defaultOptions,
-                  globalOptions,
-                  $scope.mxCheckoutOptions
-                );
+                var _options = angular.extend({}, defaultOptions, globalOptions, $scope.mxCheckoutOptions);
                 var options = {
                   tabs: [],
                   ibank: [],
                   emoney: []
                 };
+                var config = config;
 
                 angular.forEach(_options.tabs, function(i) {
-                  if (
-                    mxCheckoutConfig.tabs.hasOwnProperty(i) &&
-                    options.tabs.indexOf(i) < 0
-                  )
-                    options.tabs.push(i);
+                  if (config.hasOwnProperty(i) && options.tabs.indexOf(i) < 0) options.tabs.push(i);
                 });
                 angular.forEach(_options.ibank, function(i) {
-                  if (
-                    mxCheckoutConfig.tabs.ibank.payment_systems.hasOwnProperty(
-                      i
-                    ) &&
-                    options.ibank.indexOf(i) < 0
-                  )
+                  if (config.ibank.payment_systems.hasOwnProperty(i) && options.ibank.indexOf(i) < 0)
                     options.ibank.push(i);
                 });
                 angular.forEach(_options.emoney, function(i) {
-                  if (
-                    mxCheckoutConfig.tabs.emoney.payment_systems.hasOwnProperty(
-                      i
-                    ) &&
-                    options.emoney.indexOf(i) < 0
-                  )
+                  if (config.emoney.payment_systems.hasOwnProperty(i) && options.emoney.indexOf(i) < 0)
                     options.emoney.push(i);
                 });
                 if (options.tabs.indexOf(_options.active) < 0) {
@@ -1454,15 +1414,6 @@ angular
               }
             }
           ],
-          request: function(response) {
-            var deferred = $q.defer();
-
-            setTimeout(function() {
-              deferred.resolve(response);
-            }, 500);
-
-            return deferred.promise;
-          },
           stop: function($event) {
             $event.preventDefault();
             $event.stopPropagation();
@@ -1510,10 +1461,7 @@ angular
         return field.value.length >= parseInt(length, 10);
       },
       cvv2: function(field) {
-        return (
-          _validation.num.call(this, field) &&
-          _validation.min_length.call(this, field, 3)
-        );
+        return _validation.num.call(this, field) && _validation.min_length.call(this, field, 3);
       },
       expiry: function(month, year) {
         var currentTime, expiry;
@@ -1654,7 +1602,7 @@ angular.module("mx/template/checkout/checkout.html", []).run(["$templateCache", 
     "    </uib-accordion>\n" +
     "    <div class=\"lock\"><i class=\"i i-lock\"></i> Your payment info is stored securely</div>\n" +
     "    <hr>\n" +
-    "    <div class=\"text-right\"><button type=\"button\" class=\"btn {{::data.options.btnClass}}\" ng-click=\"formSubmit(true)\" ng-disabled=\"data.disabled\">Checkout</button></div>\n" +
+    "    <div class=\"text-right\"><button type=\"button\" class=\"btn {{::data.options.btnClass}}\" ng-click=\"formSubmit()\" ng-disabled=\"data.disabled\">Checkout</button></div>\n" +
     "</div>");
 }]);
 

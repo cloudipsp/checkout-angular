@@ -105,10 +105,7 @@ angular
         if (scope.config.bind) {
           attrs.$observe('bind', function(value) {
             // console.log('$observe ' + scope.config.bind + ' exp_date')
-            validate('exp_date', ngModel.$modelValue, value, function(
-              result,
-              valid
-            ) {
+            validate('exp_date', ngModel.$modelValue, value, function(result, valid) {
               ngModel.$setValidity(valid, result);
             });
           });
@@ -130,8 +127,7 @@ angular
           if (result) {
             scope.valid.iconShow[scope.config.bind] = false;
           } else {
-            scope.valid.errorText[ngModel.$name] =
-              mxCheckoutConfig.error[valid];
+            scope.valid.errorText[ngModel.$name] = mxCheckoutConfig.error[valid];
           }
           ngModel.$setValidity(valid, result);
         }

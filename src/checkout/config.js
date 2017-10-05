@@ -67,7 +67,8 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
     required: 'Required field',
     ccard: 'Credit card number is invalid',
     exp_date: 'Invalid expiry date',
-    cvv2: 'Incorrect CVV2 format'
+    cvv2: 'Incorrect CVV2 format',
+    card: "Please verify that all card information you've provided is accurate and try again"
   },
   tabs: {
     card: {
