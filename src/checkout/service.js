@@ -166,7 +166,7 @@ angular
                   ibank: [],
                   emoney: []
                 };
-                var config = config;
+                var config = mxCheckoutConfig.tabs;
 
                 angular.forEach(_options.tabs, function(i) {
                   if (config.hasOwnProperty(i) && options.tabs.indexOf(i) < 0) options.tabs.push(i);
