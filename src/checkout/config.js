@@ -1,7 +1,7 @@
 angular.module('mx.checkout').constant('mxCheckoutConfig', {
   fields: {
     card: {
-      id: 'card',
+      id: 'card_number',
       // placeholder: 'Card number',
       text: 'Card number',
       label: true,
@@ -10,28 +10,28 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       valid: 'ccard,required'
     },
     expireMonth: {
-      id: 'expireMonth',
+      id: 'expiry_month',
       placeholder: 'MM',
       text: 'Expiration',
       label: true,
       size: '2',
       pattern: '[0-9]{2}',
       valid: 'exp_date,required',
-      bind: 'expireYear',
+      bind: 'expiry_year',
       format: 'month'
     },
     expireYear: {
-      id: 'expireYear',
+      id: 'expiry_year',
       placeholder: 'YY',
       label: true,
       size: '2',
       pattern: '[0-9]{2}',
       valid: 'exp_date,required',
-      bind: 'expireMonth',
+      bind: 'expiry_month',
       format: 'year'
     },
     cvv: {
-      id: 'cvv',
+      id: 'cvv2',
       // placeholder: 'CVV',
       text: 'Security Code',
       label: true,
@@ -40,55 +40,69 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       size: '3',
       pattern: '[0-9]{3}',
       valid: 'cvv2,required'
+    },
+    name: {
+      id: 'name',
+      placeholder: 'Name',
+      text: 'Name',
+      label: true,
+      valid: 'required'
+    },
+    email: {
+      id: 'email',
+      placeholder: 'Email',
+      text: 'Email',
+      label: true,
+      valid: 'required'
+    },
+    phone: {
+      id: 'phone',
+      placeholder: 'Phone',
+      text: 'Phone',
+      label: true,
+      valid: 'required'
     }
   },
-  formMap: ['card', 'expireMonth', 'expireYear', 'cvv'],
   error: {
     required: 'Required field',
     ccard: 'Credit card number is invalid',
     exp_date: 'Invalid expiry date',
     cvv2: 'Incorrect CVV2 format'
   },
-  defaultData: {
-    tabs: {
-      card: {
-        id: 'card',
-        icons: ['visa', 'master', 'american', 'discover']
-      },
-      emoney: {
-        id: 'emoney',
-        icons: []
-      },
-      ibank: {
-        id: 'ibank',
-        icons: []
-      }
-    }
-  },
-  getData: {
-    active_tab: 'card',
-    tabs_order: ['card', 'ibank', 'emoney'],
-    tabs: {
-      card: {
-        name: 'Credit or Debit Card'
-      },
-      emoney: {
-        name: 'Electronic money',
-        payment_systems: {
-          webmoney: {
-            name: 'Webmoney'
-          }
+  tabs: {
+    card: {
+      id: 'card',
+      icons: ['visa', 'master', 'american', 'discover'],
+      name: 'Credit or Debit Card',
+      selected: 'card',
+      payment_systems: {
+        card: {
+          formMap: ['card_number', 'expiry_month', 'expiry_year', 'cvv2']
         }
-      },
-      ibank: {
-        name: 'Internet-banking',
-        payment_systems: {
-          p24: {
-            name: 'Приват24'
-          },
-          plotva24: {
-            name: 'PLATBA 24'
-          }
+      }
+    },
+    emoney: {
+      id: 'emoney',
+      icons: [],
+      name: 'Electronic money',
+      payment_systems: {
+        webmoney: {
+          name: 'Webmoney',
+          formMap: ['phone', 'email']
+        }
+      }
+    },
+    ibank: {
+      id: 'ibank',
+      icons: [],
+      name: 'Internet-banking',
+      payment_systems: {
+        p24: {
+          name: 'Приват24',
+          formMap: ['name', 'email']
+        },
+        plotva24: {
+          name: 'PLATBA 24'
         }
       }
     }

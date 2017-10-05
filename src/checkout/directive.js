@@ -4,11 +4,26 @@ angular
     return {
       restrict: 'A',
       templateUrl: 'mx/template/checkout/checkout.html',
+      transclude: true,
       scope: {
         mxCheckoutOptions: '=?',
-        onSubmit: '&'
+        onError: '&',
+        onSuccess: '&'
       },
       controller: mxCheckout.controller
+    };
+  })
+  .directive('mxCheckoutField', function(mxCheckout) {
+    return {
+      require: '^^mxCheckout',
+      restrict: 'A',
+      scope: {
+        name: '@',
+        value: '@'
+      },
+      link: function(scope, element, attrs, checkoutCtrl) {
+        checkoutCtrl.addParams(scope);
+      }
     };
   })
   .directive('mxFieldInput', function() {
@@ -60,7 +75,7 @@ angular
             // console.log('init ' + ngModel.$name + ' ' + valid)
             validate(
               valid,
-              ngModel.$modelValue,
+              scope.model[scope.config.id], //ngModel.$modelValue,
               scope.model[scope.config.bind],
               setError
             );

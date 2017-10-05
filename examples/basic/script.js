@@ -18,10 +18,21 @@ angular.module('app').controller('Demo', function($scope) {
     alertDangerClass: 'alert-danger',
     formControlClass: 'form-control',
     btnClass: 'btn-success',
-    tooltipClass: ''
+    tooltipClass: '',
+
+    active: 'ibank',
+    tabs: ['card', 'ibank'],
+    ibank: ['p24', 'plotva24'],
+    params: {
+      test: 'test'
+    }
   };
 
-  $scope.formSubmit = function(formMap){
-    console.log(formMap)
+  $scope.error = function(response){
+    console.log(response)
+  };
+
+  $scope.success = function(response){
+    console.log(response)
   };
 });

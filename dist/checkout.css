@@ -342,8 +342,16 @@ fieldset[disabled] .btn-checkout.focus {
   display: inline-block;
 }
 [mx-checkout] .form-group {
-  white-space: nowrap;
   margin-bottom: 8px;
+}
+[mx-checkout] [name="data.formCtrl.card"] .form-group {
+  white-space: nowrap;
+}
+[mx-checkout] .text-muted {
+  color: inherit;
+}
+[mx-checkout] a:focus {
+  outline: none;
 }
 [mx-checkout] iframe {
   display: block;

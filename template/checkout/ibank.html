@@ -1,16 +1,34 @@
 <form name="data.formCtrl.ibank" ng-submit="formSubmit()" novalidate>
+    <div class="row">
+        <div class="col-xs-12">
+            <mx-alert alert="data.alert.ibank"></mx-alert>
+        </div>
+    </div>
     <div class="payment-systems form-group">
         <div class="payment-system"
              ng-class="{
-            active: tab.selected === id
-         }"
-             ng-repeat="(id, value) in tab.payment_systems"
+                active: tab.selected === id
+             }"
+             ng-repeat="id in ::data.options.ibank"
+             ng-init="value = tab.payment_systems[id]"
              ng-click="selectPaymentSystems(tab, id)"
         >
             <div class="i-payment-system i-{{::id}}"></div>
             <div>{{::value.name}}</div>
         </div>
     </div>
-    <input type="hidden" ng-model="data.ibank.type" ng-required="true">
-    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" />
+
+    <div
+            ng-if="tab.selected"
+            ng-repeat="id in tab.payment_systems[tab.selected].formMap"
+            mx-field-input="data.ibank"
+            config="data.config.fields[id]"
+            form-ctrl="data.formCtrl.ibank"
+            blur="blur(inputCtrl, 'ibank')"
+            focus="focus(inputCtrl, 'ibank')"
+            valid="data.valid.ibank"
+    ></div>
+
+    <input type="hidden" ng-model="data.ibank.payment_system" ng-required="true">
+    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1"/>
 </form>

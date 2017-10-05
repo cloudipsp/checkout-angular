@@ -6,7 +6,12 @@ angular
       alertDangerClass: 'alert-checkout-danger',
       formControlClass: 'form-control form-control-checkout',
       btnClass: 'btn-checkout',
-      tooltipClass: 'tooltip-checkout'
+      tooltipClass: 'tooltip-checkout',
+
+      active: 'card',
+      tabs: ['card', 'ibank', 'emoney'],
+      ibank: ['p24'],
+      emoney: ['webmoney']
     };
     var globalOptions = {};
 
@@ -14,7 +19,7 @@ angular
       options: function(value) {
         angular.extend(globalOptions, value);
       },
-      $get: function($q, mxModal) {
+      $get: function($q) {
         return {
           controller: [
             '$scope',
@@ -22,27 +27,31 @@ angular
             '$element',
             'mxCheckout',
             function($scope, mxCheckoutConfig, $element, mxCheckout) {
+              var api = $checkout('Api');
+
               $scope.data = {
-                options: angular.extend(
-                  {},
-                  defaultOptions,
-                  globalOptions,
-                  $scope.mxCheckoutOptions
-                ),
-                config: angular.merge({}, mxCheckoutConfig),
+                options: getOption(),
+                config: angular.copy(mxCheckoutConfig),
                 formCtrl: {},
 
-                card: {},
+                card: {
+                  payment_system: 'card'
+                },
                 emoney: {},
                 ibank: {},
 
-                loading: true,
-                alert: {},
+                disabled: false,
+
+                alert: {
+                  card: {},
+                  emoney: {},
+                  ibank: {}
+                },
 
                 valid: {
-                  errorText: {},
-                  iconShow: {},
-                  autoFocus: {}
+                  card: { errorText: {}, iconShow: {}, autoFocus: {} },
+                  emoney: { errorText: {}, iconShow: {}, autoFocus: {} },
+                  ibank: { errorText: {}, iconShow: {}, autoFocus: {} }
                 }
               };
 
@@ -51,95 +60,167 @@ angular
               $scope.blur = blur;
               $scope.focus = focus;
               $scope.selectPaymentSystems = selectPaymentSystems;
+              this.addParams = addParams;
 
               angular.forEach($scope.data.config.fields, function(item) {
                 item.formControlClass = $scope.data.options.formControlClass;
                 item.tooltipClass = $scope.data.options.tooltipClass;
               });
-              getData();
+              $scope.data.config.tabs[$scope.data.options.active].open = true;
 
-              function getData() {
-                $scope.data.loading = true;
-                mxCheckout.request($scope.data.config.getData).then(
-                  function(response) {
-                    angular.merge(
-                      $scope.data,
-                      $scope.data.config.defaultData,
-                      response
-                    );
-                    $scope.data.tabs[$scope.data.active_tab].open = true;
+              angular.forEach($scope.data.options.tabs, function(tab) {
+                angular.extend($scope.data[tab], $scope.data.options.params);
+              });
 
-                    $scope.data.loading = false;
-                  },
-                  function(error) {
-                    $scope.data.loading = false;
-                  }
-                );
+              function addParams(field) {
+                angular.forEach($scope.data.options.tabs, function(tab) {
+                  $scope.data[tab][field.name] = field.value;
+                });
               }
 
               function formSubmit(clickButton) {
-                var form = getActiveTab();
-                if ($scope.data.formCtrl[form].$valid) {
-                  $scope.onSubmit({
-                    formMap: $scope.data[form]
+                var tab = getActiveTab();
+                if ($scope.data.formCtrl[tab.id].$valid) {
+                  if ($scope.data.disabled) return;
+                  $scope.data.disabled = true;
+                  $scope.data.alert[tab.id] = {};
+
+                  api.scope(function() {
+                    this.request(
+                      'api.checkout.form',
+                      'request',
+                      $scope.data[tab]
+                    )
+                      .done(function(model) {
+                        $scope.onSuccess({
+                          response: model
+                        });
+                        model.sendResponse();
+                        $scope.data.disabled = false;
+                        $scope.$apply();
+                      })
+                      .fail(function(model) {
+                        $scope.data.disabled = false;
+                        addAlert(
+                          tab,
+                          [
+                            model.attr('error.code'),
+                            model.attr('error.message')
+                          ].join(' ')
+                        );
+                        $scope.onError({
+                          response: model
+                        });
+                        $scope.$apply();
+                      });
                   });
-                  if (form === 'card') {
-                    mxCheckout.show3DS($element);
-                  }
-                } else if (form === 'card') {
+                } else {
                   var autoFocusFlag = true;
-                  angular.forEach($scope.data.config.formMap, function(field) {
-                    if ($scope.data.formCtrl[form][field].$invalid) {
-                      if (autoFocusFlag) {
-                        autoFocusFlag = false;
-                        $scope.data.valid.autoFocus[field] = +new Date();
-                        $scope.data.valid.iconShow[field] = false;
-                      } else {
-                        $scope.data.valid.iconShow[field] = true;
+                  if (tab.selected) {
+                    angular.forEach(
+                      tab.payment_systems[tab.selected].formMap,
+                      function(field) {
+                        if ($scope.data.formCtrl[tab.id][field].$invalid) {
+                          if (autoFocusFlag) {
+                            autoFocusFlag = false;
+                            $scope.data.valid[tab.id].autoFocus[
+                              field
+                            ] = +new Date();
+                            $scope.data.valid[tab.id].iconShow[field] = false;
+                          } else {
+                            $scope.data.valid[tab.id].iconShow[field] = true;
+                          }
+                        }
                       }
-                    }
-                  });
-                  if (clickButton) {
+                    );
+                  }
+                  if (clickButton && tab.id === 'card') {
                     addAlert(
+                      tab.id,
                       "Please verify that all card information you've provided is accurate and try again"
                     );
                   }
                 }
               }
 
-              function blur(inputCtrl) {
+              function blur(inputCtrl, tab) {
                 if (inputCtrl.$invalid) {
-                  $scope.data.valid.iconShow[inputCtrl.$name] = true;
+                  $scope.data.valid[tab].iconShow[inputCtrl.$name] = true;
                 }
               }
 
-              function focus(inputCtrl) {
+              function focus(inputCtrl, tab) {
                 if (inputCtrl.$invalid) {
-                  $scope.data.valid.iconShow[inputCtrl.$name] = false;
+                  $scope.data.valid[tab].iconShow[inputCtrl.$name] = false;
                   // $scope.data.valid.errorText[inputCtrl.$name] = '';
                 }
               }
 
               function selectPaymentSystems(tab, id) {
                 tab.selected = id;
-                $scope.data[tab.id].type = id;
+                $scope.data[tab.id].payment_system = id;
               }
 
               function getActiveTab() {
                 var result;
-                angular.forEach($scope.data.tabs, function(tab) {
+                angular.forEach($scope.data.config.tabs, function(tab) {
                   if (tab.open) {
-                    result = tab.id;
+                    result = tab;
                   }
                 });
                 return result;
               }
 
-              function addAlert(text, type) {
-                $scope.data.alert = {
+              function addAlert(tab, text, type) {
+                $scope.data.alert[tab] = {
                   text: text,
                   type: type || $scope.data.options.alertDangerClass
                 };
+              }
+
+              function getOption() {
+                var _options = angular.extend(
+                  {},
+                  defaultOptions,
+                  globalOptions,
+                  $scope.mxCheckoutOptions
+                );
+                var options = {
+                  tabs: [],
+                  ibank: [],
+                  emoney: []
+                };
+
+                angular.forEach(_options.tabs, function(i) {
+                  if (
+                    mxCheckoutConfig.tabs.hasOwnProperty(i) &&
+                    options.tabs.indexOf(i) < 0
+                  )
+                    options.tabs.push(i);
+                });
+                angular.forEach(_options.ibank, function(i) {
+                  if (
+                    mxCheckoutConfig.tabs.ibank.payment_systems.hasOwnProperty(
+                      i
+                    ) &&
+                    options.ibank.indexOf(i) < 0
+                  )
+                    options.ibank.push(i);
+                });
+                angular.forEach(_options.emoney, function(i) {
+                  if (
+                    mxCheckoutConfig.tabs.emoney.payment_systems.hasOwnProperty(
+                      i
+                    ) &&
+                    options.emoney.indexOf(i) < 0
+                  )
+                    options.emoney.push(i);
+                });
+                if (options.tabs.indexOf(_options.active) < 0) {
+                  _options.active = options.tabs[0] || defaultOptions.active;
+                }
+
+                return angular.extend(_options, options);
               }
             }
           ],
@@ -151,18 +232,6 @@ angular
             }, 500);
 
             return deferred.promise;
-          },
-          show3DS: function($element) {
-            mxModal
-              .open(
-                {
-                  title: 'Title',
-                  text: 'Text',
-                  type: 'success'
-                },
-                $element
-              )
-              .result.then(function() {}, function() {});
           },
           stop: function($event) {
             $event.preventDefault();

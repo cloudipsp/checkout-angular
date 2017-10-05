@@ -2,4 +2,3 @@
 /node_modules
 *.map
 template/**/*.js
-/dev/main.annotate.js

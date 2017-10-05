@@ -1,28 +1,22 @@
 <form name="data.formCtrl.card" ng-submit="formSubmit()" novalidate>
     <div class="row">
         <div class="col-xs-12">
-            <div
-                    ng-if="data.alert.text"
-                    class="alert {{data.alert.type}}"
-                    role="alert"
-            >
-                <div class="alert-inner">{{data.alert.text}}</div>
-            </div>
+            <mx-alert alert="data.alert.card"></mx-alert>
         </div>
     </div>
     <div class="row">
         <div class="col-xs-7 col-card">
-            <div mx-field-input="data.card" config="data.config.fields.card" form-ctrl="data.formCtrl.card" blur="blur(inputCtrl)" focus="focus(inputCtrl)" valid="data.valid"></div>
+            <div mx-field-input="data.card" config="data.config.fields.card" form-ctrl="data.formCtrl.card" blur="blur(inputCtrl, 'card')" focus="focus(inputCtrl, 'card')" valid="data.valid.card"></div>
         </div>
         <div class="col-xs-5">
             <div class="row">
                 <div class="col-xs-6 col-expire-month">
                     <div mx-field-input="data.card" config="data.config.fields.expireMonth"
-                         form-ctrl="data.formCtrl.card" blur="blur(inputCtrl)" focus="focus(inputCtrl)" valid="data.valid"></div>
+                         form-ctrl="data.formCtrl.card" blur="blur(inputCtrl, 'card')" focus="focus(inputCtrl, 'card')" valid="data.valid.card"></div>
                 </div>
                 <div class="col-xs-6 col-expire-year">
                     <div mx-field-input="data.card" config="data.config.fields.expireYear"
-                         form-ctrl="data.formCtrl.card" blur="blur(inputCtrl)" focus="focus(inputCtrl)" valid="data.valid"></div>
+                         form-ctrl="data.formCtrl.card" blur="blur(inputCtrl, 'card')" focus="focus(inputCtrl, 'card')" valid="data.valid.card"></div>
                 </div>
             </div>
         </div>
@@ -30,7 +24,7 @@
     </div>
     <div class="row">
         <div class="col-xs-4 col-cvv">
-            <div mx-field-input="data.card" config="data.config.fields.cvv" form-ctrl="data.formCtrl.card" blur="blur(inputCtrl)" focus="focus(inputCtrl)" valid="data.valid"></div>
+            <div mx-field-input="data.card" config="data.config.fields.cvv" form-ctrl="data.formCtrl.card" blur="blur(inputCtrl, 'card')" focus="focus(inputCtrl, 'card')" valid="data.valid.card"></div>
         </div>
     </div>
     <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" />

@@ -18,7 +18,11 @@ angular.module('app').config(function(mxCheckoutProvider) {
 );
 
 angular.module('app').controller('Demo', function($scope) {
-  $scope.formSubmit = function(formMap){
-    console.log(formMap)
+  $scope.error = function(response){
+    console.log(response)
+  };
+
+  $scope.success = function(response){
+    console.log(response)
   };
 });

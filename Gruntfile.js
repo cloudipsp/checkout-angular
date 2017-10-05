@@ -1,13 +1,12 @@
 module.exports = function (grunt) {
   grunt.initConfig({
+    name: 'checkout',
     pkg: grunt.file.readJSON('package.json'),
     concat: {
-      options: {
-        separator: '\n;\n',
-        sourceMap: true
-      },
-      checkout: {
+      js: {
         options: {
+          separator: '\n;\n',
+          // sourceMap: true,
           banner: '\n(function(){\n"use strict";\n',
           footer: '\n})();'
         },
@@ -17,16 +16,30 @@ module.exports = function (grunt) {
           'src/**/*.js',
           'template/**/*.js'
         ],
-        dest: 'dist/checkout.js'
+        dest: 'dist/<%= name %>.js'
+      },
+      dev: {
+        src: [
+          'node_modules/ipsp-js-sdk/dist/checkout.js',
+          'dist/<%= name %>.js'
+        ],
+        dest: 'dist/<%= name %>.js'
+      },
+      dist: {
+        src: [
+          'node_modules/ipsp-js-sdk/dist/checkout.min.js',
+          'dist/<%= name %>.min.js'
+        ],
+        dest: 'dist/<%= name %>.min.js'
       }
     },
     ngAnnotate: {
       options: {
         singleQuotes: true
       },
-      checkout: {
-        src: ['dist/checkout.js'],
-        dest: 'dist/checkout.js'
+      js: {
+        src: ['dist/<%= name %>.js'],
+        dest: 'dist/<%= name %>.js'
       }
     },
     html2js: {
@@ -51,9 +64,9 @@ module.exports = function (grunt) {
           drop_console: true
         }
       },
-      checkout: {
-        src: ['dist/checkout.js'],
-        dest: 'dist/checkout.min.js'
+      js: {
+        src: ['dist/<%= name %>.js'],
+        dest: 'dist/<%= name %>.min.js'
       }
     },
     less: {
@@ -64,14 +77,14 @@ module.exports = function (grunt) {
           sourceMapRootpath: '..'
         },
         src: ['assets/index.less'],
-        dest: 'dist/checkout.css'
+        dest: 'dist/<%= name %>.css'
       },
       dist: {
         options: {
           compress: true
         },
         expand: true,
-        src: ['dist/checkout.css'],
+        src: ['dist/<%= name %>.css'],
         ext: '.min.css'
       }
     },
@@ -80,7 +93,7 @@ module.exports = function (grunt) {
         logConcurrentOutput: true
       },
       dev: {
-        tasks: ['watch:less', 'watch:checkout', 'watch:template']
+        tasks: ['watch:less', 'watch:js', 'watch:template']
       }
     },
     watch: {
@@ -91,12 +104,15 @@ module.exports = function (grunt) {
         files: ['assets/**/*.less'],
         tasks: ['less:dev']
       },
-      checkout: {
+      js: {
+        options: {
+          spawn: true
+        },
         files: [
           'src/**/*.js',
           'template/**/*.js'
         ],
-        tasks: ['concat:checkout']
+        tasks: ['concat:js', 'concat:dev']
       },
       template: {
         files: ['template/**/*.html'],
@@ -125,17 +141,20 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-less');
 
   grunt.registerTask('dist', [
+    'less:dev',
     'less:dist',
     'prettier:base',
     'html2js',
-    'concat:checkout',
-    'ngAnnotate:checkout',
-    'uglify:checkout'
+    'concat:js',
+    'ngAnnotate:js',
+    'uglify:js',
+    'concat:dist'
   ]);
 
   grunt.registerTask('dev', [
     'less:dev',
-    'concat:checkout',
+    'concat:js',
+    'concat:dev',
     'concurrent:dev'
   ]);
 };
