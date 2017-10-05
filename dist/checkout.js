@@ -1310,11 +1310,11 @@ angular
                 if ($scope.data.formCtrl[tab.id].$valid) {
                   if ($scope.data.disabled) return;
                   $scope.data.disabled = true;
-                  $scope.data.alert[tab.id] = {};
 
                   api.scope(function() {
                     this.request('api.checkout.form', 'request', $scope.data[tab.id])
                       .done(function(model) {
+                        $scope.data.alert[tab.id] = {};
                         $scope.onSuccess({
                           response: model
                         });
