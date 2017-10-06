@@ -75,7 +75,6 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       id: 'card',
       icons: ['visa', 'master', 'american', 'discover'],
       name: 'Credit or Debit Card',
-      selected: 'card',
       payment_systems: {
         card: {
           formMap: ['card_number', 'expiry_month', 'expiry_year', 'cvv2']

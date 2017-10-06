@@ -1,7 +1,7 @@
-<form name="data.formCtrl.ibank" ng-submit="formSubmit()" novalidate>
+<form name="data.ibank.formCtrl" ng-submit="formSubmit()" novalidate>
     <div class="row">
         <div class="col-xs-12">
-            <mx-alert alert="data.alert.ibank"></mx-alert>
+            <mx-alert alert="data.ibank.alert"></mx-alert>
         </div>
     </div>
     <div class="payment-systems form-group">
@@ -23,12 +23,10 @@
             ng-repeat="id in tab.payment_systems[tab.selected].formMap"
             mx-field-input="data.ibank"
             config="data.config.fields[id]"
-            form-ctrl="data.formCtrl.ibank"
-            blur="blur(inputCtrl, 'ibank')"
-            focus="focus(inputCtrl, 'ibank')"
-            valid="data.valid.ibank"
+            blur="blur(inputCtrl, data.ibank)"
+            focus="focus(inputCtrl, data.ibank)"
     ></div>
 
-    <input type="hidden" ng-model="data.ibank.payment_system" ng-required="true">
+    <input type="hidden" ng-model="data.ibank.form.payment_system" ng-required="true">
     <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1"/>
 </form>

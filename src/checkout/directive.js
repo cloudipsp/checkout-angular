@@ -34,8 +34,6 @@ angular
       scope: {
         model: '=mxFieldInput',
         config: '=',
-        formCtrl: '=',
-        valid: '=',
         blur: '&',
         focus: '&'
       }

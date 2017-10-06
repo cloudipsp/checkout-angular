@@ -1,7 +1,7 @@
 <div class="form-group"
      ng-class="{
-                'has-error': valid.iconShow[config.id],
-                'has-success': formCtrl[config.id].$valid
+                'has-error': model.valid.iconShow[config.id],
+                'has-success': model.formCtrl[config.id].$valid
             }"
 >
     <label
@@ -11,7 +11,7 @@
     <input
 
             name="{{::config.id}}"
-            ng-model="model[config.id]"
+            ng-model="model.form[config.id]"
             type="tel"
             class="{{::config.formControlClass}}"
 
@@ -21,20 +21,20 @@
             size="{{::config.size}}"
             maxlength="{{::config.size}}"
             autocomplete="off"
-            mx-auto-focus="valid.autoFocus[config.id]"
+            mx-auto-focus="model.valid.autoFocus[config.id]"
 
-            model="model"
+            model="model.form"
             config="config"
-            mx-field-valid="valid"
-            bind="{{model[config.bind]}}"
+            mx-field-valid="model.valid"
+            bind="{{model.form[config.bind]}}"
 
-            ng-blur="blur({inputCtrl: formCtrl[config.id]})"
-            ng-focus="focus({inputCtrl: formCtrl[config.id]})"
+            ng-blur="blur({inputCtrl: model.formCtrl[config.id]})"
+            ng-focus="focus({inputCtrl: model.formCtrl[config.id]})"
 
-            uib-tooltip="{{valid.errorText[config.id]}}"
+            uib-tooltip="{{model.valid.errorText[config.id]}}"
             tooltip-placement="right"
             tooltip-trigger="{'mouseenter': 'mouseleave', 'none': 'focus'}"
-            tooltip-enable="{{valid.iconShow[config.id]}}"
+            tooltip-enable="{{model.valid.iconShow[config.id]}}"
             tooltip-append-to-body="true"
             tooltip-class="{{::config.tooltipClass}}"
             tooltip-animation="false"

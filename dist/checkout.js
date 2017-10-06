@@ -954,7 +954,6 @@ angular.module('mx.checkout', [
   'mx/template/checkout/ibank.html',
   'mx/template/checkout/emoney.html',
   'mx/template/checkout/field-input.html',
-  'mx/template/checkout/modal.html',
   'mx/template/checkout/alert.html'
 ]);
 
@@ -1044,7 +1043,6 @@ angular.module('mx.checkout').constant('mxCheckoutConfig', {
       id: 'card',
       icons: ['visa', 'master', 'american', 'discover'],
       name: 'Credit or Debit Card',
-      selected: 'card',
       payment_systems: {
         card: {
           formMap: ['card_number', 'expiry_month', 'expiry_year', 'cvv2']
@@ -1116,8 +1114,6 @@ angular
       scope: {
         model: '=mxFieldInput',
         config: '=',
-        formCtrl: '=',
-        valid: '=',
         blur: '&',
         focus: '&'
       }
@@ -1259,27 +1255,7 @@ angular
               $scope.data = {
                 options: getOption(),
                 config: angular.copy(mxCheckoutConfig),
-                formCtrl: {},
-
-                card: {
-                  payment_system: 'card'
-                },
-                emoney: {},
-                ibank: {},
-
-                disabled: false,
-
-                alert: {
-                  card: {},
-                  emoney: {},
-                  ibank: {}
-                },
-
-                valid: {
-                  card: { errorText: {}, iconShow: {}, autoFocus: {} },
-                  emoney: { errorText: {}, iconShow: {}, autoFocus: {} },
-                  ibank: { errorText: {}, iconShow: {}, autoFocus: {} }
-                }
+                disabled: false
               };
 
               $scope.formSubmit = formSubmit;
@@ -1296,25 +1272,32 @@ angular
               $scope.data.config.tabs[$scope.data.options.active].open = true;
 
               angular.forEach($scope.data.options.tabs, function(tab) {
-                angular.extend($scope.data[tab], $scope.data.options.params);
+                $scope.data[tab] = {
+                  alert: {},
+                  valid: { errorText: {}, iconShow: {}, autoFocus: {} },
+                  form: angular.extend({}, $scope.data.options.params)
+                };
+                if (tab === 'card') selectPaymentSystems($scope.data.config.tabs.card, 'card');
               });
 
               function addParams(field) {
                 angular.forEach($scope.data.options.tabs, function(tab) {
-                  $scope.data[tab][field.name] = field.value;
+                  $scope.data[tab].form[field.name] = field.value;
                 });
               }
 
               function formSubmit() {
                 var tab = getActiveTab();
-                if ($scope.data.formCtrl[tab.id].$valid) {
+                var data = $scope.data[tab.id];
+
+                if (data.formCtrl.$valid) {
                   if ($scope.data.disabled) return;
                   $scope.data.disabled = true;
 
                   api.scope(function() {
-                    this.request('api.checkout.form', 'request', $scope.data[tab.id])
+                    this.request('api.checkout.form', 'request', data.form)
                       .done(function(model) {
-                        $scope.data.alert[tab.id] = {};
+                        data.alert = {};
                         $scope.onSuccess({
                           response: model
                         });
@@ -1324,7 +1307,7 @@ angular
                       })
                       .fail(function(model) {
                         $scope.data.disabled = false;
-                        addAlert(tab.id, [model.attr('error.code'), model.attr('error.message')].join(' '));
+                        addAlert(data, [model.attr('error.code'), model.attr('error.message')].join(' '));
                         $scope.onError({
                           response: model
                         });
@@ -1335,52 +1318,50 @@ angular
                   var autoFocusFlag = true;
                   if (tab.selected) {
                     angular.forEach(tab.payment_systems[tab.selected].formMap, function(field) {
-                      if ($scope.data.formCtrl[tab.id][field].$invalid) {
+                      if (data.formCtrl[field].$invalid) {
                         if (autoFocusFlag) {
                           autoFocusFlag = false;
-                          $scope.data.valid[tab.id].autoFocus[field] = +new Date();
-                          $scope.data.valid[tab.id].iconShow[field] = false;
+                          data.valid.autoFocus[field] = +new Date();
+                          data.valid.iconShow[field] = false;
                         } else {
-                          $scope.data.valid[tab.id].iconShow[field] = true;
+                          data.valid.iconShow[field] = true;
                         }
                       }
                     });
                   }
                   if (tab.id === 'card') {
-                    addAlert(tab.id, $scope.data.config.error.card);
+                    addAlert(data, $scope.data.config.error.card);
                   }
                 }
               }
 
-              function blur(inputCtrl, tab) {
+              function blur(inputCtrl, data) {
                 if (inputCtrl.$invalid) {
-                  $scope.data.valid[tab].iconShow[inputCtrl.$name] = true;
+                  data.valid.iconShow[inputCtrl.$name] = true;
                 }
               }
 
-              function focus(inputCtrl, tab) {
+              function focus(inputCtrl, data) {
                 if (inputCtrl.$invalid) {
-                  $scope.data.valid[tab].iconShow[inputCtrl.$name] = false;
+                  data.valid.iconShow[inputCtrl.$name] = false;
                 }
               }
 
               function selectPaymentSystems(tab, id) {
                 tab.selected = id;
-                $scope.data[tab.id].payment_system = id;
+                $scope.data[tab.id].form.payment_system = id;
               }
 
               function getActiveTab() {
                 var result;
                 angular.forEach($scope.data.config.tabs, function(tab) {
-                  if (tab.open) {
-                    result = tab;
-                  }
+                  if (tab.open) result = tab;
                 });
                 return result;
               }
 
-              function addAlert(tab, text, type) {
-                $scope.data.alert[tab] = {
+              function addAlert(data, text, type) {
+                data.alert = {
                   text: text,
                   type: type || $scope.data.options.alertDangerClass
                 };
@@ -1511,21 +1492,6 @@ angular
         return result;
       }
     };
-  })
-  .factory('mxModal', function($uibModal) {
-    return {
-      open: function(option, $element) {
-        return $uibModal.open({
-          templateUrl: 'mx/template/checkout/modal.html',
-          controller: function($scope, $uibModalInstance) {
-            $scope.option = option;
-
-            $scope.url = '';
-          },
-          appendTo: $element
-        });
-      }
-    };
   });
 
 ;
@@ -1544,25 +1510,23 @@ angular.module("mx/template/checkout/alert.html", []).run(["$templateCache", fun
 ;
 angular.module("mx/template/checkout/card.html", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("mx/template/checkout/card.html",
-    "<form name=\"data.formCtrl.card\" ng-submit=\"formSubmit()\" novalidate>\n" +
+    "<form name=\"data.card.formCtrl\" ng-submit=\"formSubmit()\" novalidate>\n" +
     "    <div class=\"row\">\n" +
     "        <div class=\"col-xs-12\">\n" +
-    "            <mx-alert alert=\"data.alert.card\"></mx-alert>\n" +
+    "            <mx-alert alert=\"data.card.alert\"></mx-alert>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"row\">\n" +
     "        <div class=\"col-xs-7 col-card\">\n" +
-    "            <div mx-field-input=\"data.card\" config=\"data.config.fields.card\" form-ctrl=\"data.formCtrl.card\" blur=\"blur(inputCtrl, 'card')\" focus=\"focus(inputCtrl, 'card')\" valid=\"data.valid.card\"></div>\n" +
+    "            <div mx-field-input=\"data.card\" config=\"data.config.fields.card\" blur=\"blur(inputCtrl, data.card)\" focus=\"focus(inputCtrl, data.card)\"></div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-5\">\n" +
     "            <div class=\"row\">\n" +
     "                <div class=\"col-xs-6 col-expire-month\">\n" +
-    "                    <div mx-field-input=\"data.card\" config=\"data.config.fields.expireMonth\"\n" +
-    "                         form-ctrl=\"data.formCtrl.card\" blur=\"blur(inputCtrl, 'card')\" focus=\"focus(inputCtrl, 'card')\" valid=\"data.valid.card\"></div>\n" +
+    "                    <div mx-field-input=\"data.card\" config=\"data.config.fields.expireMonth\" blur=\"blur(inputCtrl, data.card)\" focus=\"focus(inputCtrl, data.card)\"></div>\n" +
     "                </div>\n" +
     "                <div class=\"col-xs-6 col-expire-year\">\n" +
-    "                    <div mx-field-input=\"data.card\" config=\"data.config.fields.expireYear\"\n" +
-    "                         form-ctrl=\"data.formCtrl.card\" blur=\"blur(inputCtrl, 'card')\" focus=\"focus(inputCtrl, 'card')\" valid=\"data.valid.card\"></div>\n" +
+    "                    <div mx-field-input=\"data.card\" config=\"data.config.fields.expireYear\" blur=\"blur(inputCtrl, data.card)\" focus=\"focus(inputCtrl, data.card)\"></div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
@@ -1570,7 +1534,7 @@ angular.module("mx/template/checkout/card.html", []).run(["$templateCache", func
     "    </div>\n" +
     "    <div class=\"row\">\n" +
     "        <div class=\"col-xs-4 col-cvv\">\n" +
-    "            <div mx-field-input=\"data.card\" config=\"data.config.fields.cvv\" form-ctrl=\"data.formCtrl.card\" blur=\"blur(inputCtrl, 'card')\" focus=\"focus(inputCtrl, 'card')\" valid=\"data.valid.card\"></div>\n" +
+    "            <div mx-field-input=\"data.card\" config=\"data.config.fields.cvv\" blur=\"blur(inputCtrl, data.card)\" focus=\"focus(inputCtrl, data.card)\"></div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <input type=\"submit\" style=\"position: absolute; left: -9999px; width: 1px; height: 1px;\" tabindex=\"-1\" />\n" +
@@ -1609,10 +1573,10 @@ angular.module("mx/template/checkout/checkout.html", []).run(["$templateCache", 
 ;
 angular.module("mx/template/checkout/emoney.html", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("mx/template/checkout/emoney.html",
-    "<form name=\"data.formCtrl.emoney\" ng-submit=\"formSubmit()\" novalidate>\n" +
+    "<form name=\"data.emoney.formCtrl\" ng-submit=\"formSubmit()\" novalidate>\n" +
     "    <div class=\"row\">\n" +
     "        <div class=\"col-xs-12\">\n" +
-    "            <mx-alert alert=\"data.alert.emoney\"></mx-alert>\n" +
+    "            <mx-alert alert=\"data.emoney.alert\"></mx-alert>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"payment-systems form-group\">\n" +
@@ -1634,13 +1598,12 @@ angular.module("mx/template/checkout/emoney.html", []).run(["$templateCache", fu
     "            ng-repeat=\"id in tab.payment_systems[tab.selected].formMap\"\n" +
     "            mx-field-input=\"data.emoney\"\n" +
     "            config=\"data.config.fields[id]\"\n" +
-    "            form-ctrl=\"data.formCtrl.emoney\"\n" +
-    "            blur=\"blur(inputCtrl, 'emoney')\"\n" +
-    "            focus=\"focus(inputCtrl, 'emoney')\"\n" +
-    "            valid=\"data.valid.emoney\"\n" +
+    "            config=\"data.config.fields[id]\"\n" +
+    "            blur=\"blur(inputCtrl, data.emoney)\"\n" +
+    "            focus=\"focus(inputCtrl, data.emoney)\"\n" +
     "    ></div>\n" +
     "\n" +
-    "    <input type=\"hidden\" ng-model=\"data.emoney.payment_system\" ng-required=\"true\">\n" +
+    "    <input type=\"hidden\" ng-model=\"data.emoney.form.payment_system\" ng-required=\"true\">\n" +
     "    <input type=\"submit\" style=\"position: absolute; left: -9999px; width: 1px; height: 1px;\" tabindex=\"-1\"/>\n" +
     "</form>");
 }]);
@@ -1650,8 +1613,8 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
   $templateCache.put("mx/template/checkout/field-input.html",
     "<div class=\"form-group\"\n" +
     "     ng-class=\"{\n" +
-    "                'has-error': valid.iconShow[config.id],\n" +
-    "                'has-success': formCtrl[config.id].$valid\n" +
+    "                'has-error': model.valid.iconShow[config.id],\n" +
+    "                'has-success': model.formCtrl[config.id].$valid\n" +
     "            }\"\n" +
     ">\n" +
     "    <label\n" +
@@ -1661,7 +1624,7 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
     "    <input\n" +
     "\n" +
     "            name=\"{{::config.id}}\"\n" +
-    "            ng-model=\"model[config.id]\"\n" +
+    "            ng-model=\"model.form[config.id]\"\n" +
     "            type=\"tel\"\n" +
     "            class=\"{{::config.formControlClass}}\"\n" +
     "\n" +
@@ -1671,20 +1634,20 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
     "            size=\"{{::config.size}}\"\n" +
     "            maxlength=\"{{::config.size}}\"\n" +
     "            autocomplete=\"off\"\n" +
-    "            mx-auto-focus=\"valid.autoFocus[config.id]\"\n" +
+    "            mx-auto-focus=\"model.valid.autoFocus[config.id]\"\n" +
     "\n" +
-    "            model=\"model\"\n" +
+    "            model=\"model.form\"\n" +
     "            config=\"config\"\n" +
-    "            mx-field-valid=\"valid\"\n" +
-    "            bind=\"{{model[config.bind]}}\"\n" +
+    "            mx-field-valid=\"model.valid\"\n" +
+    "            bind=\"{{model.form[config.bind]}}\"\n" +
     "\n" +
-    "            ng-blur=\"blur({inputCtrl: formCtrl[config.id]})\"\n" +
-    "            ng-focus=\"focus({inputCtrl: formCtrl[config.id]})\"\n" +
+    "            ng-blur=\"blur({inputCtrl: model.formCtrl[config.id]})\"\n" +
+    "            ng-focus=\"focus({inputCtrl: model.formCtrl[config.id]})\"\n" +
     "\n" +
-    "            uib-tooltip=\"{{valid.errorText[config.id]}}\"\n" +
+    "            uib-tooltip=\"{{model.valid.errorText[config.id]}}\"\n" +
     "            tooltip-placement=\"right\"\n" +
     "            tooltip-trigger=\"{'mouseenter': 'mouseleave', 'none': 'focus'}\"\n" +
-    "            tooltip-enable=\"{{valid.iconShow[config.id]}}\"\n" +
+    "            tooltip-enable=\"{{model.valid.iconShow[config.id]}}\"\n" +
     "            tooltip-append-to-body=\"true\"\n" +
     "            tooltip-class=\"{{::config.tooltipClass}}\"\n" +
     "            tooltip-animation=\"false\"\n" +
@@ -1696,10 +1659,10 @@ angular.module("mx/template/checkout/field-input.html", []).run(["$templateCache
 ;
 angular.module("mx/template/checkout/ibank.html", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("mx/template/checkout/ibank.html",
-    "<form name=\"data.formCtrl.ibank\" ng-submit=\"formSubmit()\" novalidate>\n" +
+    "<form name=\"data.ibank.formCtrl\" ng-submit=\"formSubmit()\" novalidate>\n" +
     "    <div class=\"row\">\n" +
     "        <div class=\"col-xs-12\">\n" +
-    "            <mx-alert alert=\"data.alert.ibank\"></mx-alert>\n" +
+    "            <mx-alert alert=\"data.ibank.alert\"></mx-alert>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"payment-systems form-group\">\n" +
@@ -1721,27 +1684,13 @@ angular.module("mx/template/checkout/ibank.html", []).run(["$templateCache", fun
     "            ng-repeat=\"id in tab.payment_systems[tab.selected].formMap\"\n" +
     "            mx-field-input=\"data.ibank\"\n" +
     "            config=\"data.config.fields[id]\"\n" +
-    "            form-ctrl=\"data.formCtrl.ibank\"\n" +
-    "            blur=\"blur(inputCtrl, 'ibank')\"\n" +
-    "            focus=\"focus(inputCtrl, 'ibank')\"\n" +
-    "            valid=\"data.valid.ibank\"\n" +
+    "            blur=\"blur(inputCtrl, data.ibank)\"\n" +
+    "            focus=\"focus(inputCtrl, data.ibank)\"\n" +
     "    ></div>\n" +
     "\n" +
-    "    <input type=\"hidden\" ng-model=\"data.ibank.payment_system\" ng-required=\"true\">\n" +
+    "    <input type=\"hidden\" ng-model=\"data.ibank.form.payment_system\" ng-required=\"true\">\n" +
     "    <input type=\"submit\" style=\"position: absolute; left: -9999px; width: 1px; height: 1px;\" tabindex=\"-1\"/>\n" +
     "</form>");
-}]);
-
-;
-angular.module("mx/template/checkout/modal.html", []).run(["$templateCache", function ($templateCache) {
-  $templateCache.put("mx/template/checkout/modal.html",
-    "<div class=\"modal-header text-{{::option.type}}\">\n" +
-    "    <h3 class=\"modal-title\">{{::option.title}}</h3>\n" +
-    "</div>\n" +
-    "<div class=\"modal-body\">\n" +
-    "    {{::option.text}}\n" +
-    "    <iframe src=\"{{url | trusted}}\" frameborder=\"0\"></iframe>\n" +
-    "</div>");
 }]);
 
 })();

@@ -344,7 +344,7 @@ fieldset[disabled] .btn-checkout.focus {
 [mx-checkout] .form-group {
   margin-bottom: 8px;
 }
-[mx-checkout] [name="data.formCtrl.card"] .form-group {
+[mx-checkout] [name="data.card.formCtrl"] .form-group {
   white-space: nowrap;
 }
 [mx-checkout] .text-muted {

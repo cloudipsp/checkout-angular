@@ -32,27 +32,7 @@ angular
               $scope.data = {
                 options: getOption(),
                 config: angular.copy(mxCheckoutConfig),
-                formCtrl: {},
-
-                card: {
-                  payment_system: 'card'
-                },
-                emoney: {},
-                ibank: {},
-
-                disabled: false,
-
-                alert: {
-                  card: {},
-                  emoney: {},
-                  ibank: {}
-                },
-
-                valid: {
-                  card: { errorText: {}, iconShow: {}, autoFocus: {} },
-                  emoney: { errorText: {}, iconShow: {}, autoFocus: {} },
-                  ibank: { errorText: {}, iconShow: {}, autoFocus: {} }
-                }
+                disabled: false
               };
 
               $scope.formSubmit = formSubmit;
@@ -69,25 +49,32 @@ angular
               $scope.data.config.tabs[$scope.data.options.active].open = true;
 
               angular.forEach($scope.data.options.tabs, function(tab) {
-                angular.extend($scope.data[tab], $scope.data.options.params);
+                $scope.data[tab] = {
+                  alert: {},
+                  valid: { errorText: {}, iconShow: {}, autoFocus: {} },
+                  form: angular.extend({}, $scope.data.options.params)
+                };
+                if (tab === 'card') selectPaymentSystems($scope.data.config.tabs.card, 'card');
               });
 
               function addParams(field) {
                 angular.forEach($scope.data.options.tabs, function(tab) {
-                  $scope.data[tab][field.name] = field.value;
+                  $scope.data[tab].form[field.name] = field.value;
                 });
               }
 
               function formSubmit() {
                 var tab = getActiveTab();
-                if ($scope.data.formCtrl[tab.id].$valid) {
+                var data = $scope.data[tab.id];
+
+                if (data.formCtrl.$valid) {
                   if ($scope.data.disabled) return;
                   $scope.data.disabled = true;
 
                   api.scope(function() {
-                    this.request('api.checkout.form', 'request', $scope.data[tab.id])
+                    this.request('api.checkout.form', 'request', data.form)
                       .done(function(model) {
-                        $scope.data.alert[tab.id] = {};
+                        data.alert = {};
                         $scope.onSuccess({
                           response: model
                         });
@@ -97,7 +84,7 @@ angular
                       })
                       .fail(function(model) {
                         $scope.data.disabled = false;
-                        addAlert(tab.id, [model.attr('error.code'), model.attr('error.message')].join(' '));
+                        addAlert(data, [model.attr('error.code'), model.attr('error.message')].join(' '));
                         $scope.onError({
                           response: model
                         });
@@ -108,52 +95,50 @@ angular
                   var autoFocusFlag = true;
                   if (tab.selected) {
                     angular.forEach(tab.payment_systems[tab.selected].formMap, function(field) {
-                      if ($scope.data.formCtrl[tab.id][field].$invalid) {
+                      if (data.formCtrl[field].$invalid) {
                         if (autoFocusFlag) {
                           autoFocusFlag = false;
-                          $scope.data.valid[tab.id].autoFocus[field] = +new Date();
-                          $scope.data.valid[tab.id].iconShow[field] = false;
+                          data.valid.autoFocus[field] = +new Date();
+                          data.valid.iconShow[field] = false;
                         } else {
-                          $scope.data.valid[tab.id].iconShow[field] = true;
+                          data.valid.iconShow[field] = true;
                         }
                       }
                     });
                   }
                   if (tab.id === 'card') {
-                    addAlert(tab.id, $scope.data.config.error.card);
+                    addAlert(data, $scope.data.config.error.card);
                   }
                 }
               }
 
-              function blur(inputCtrl, tab) {
+              function blur(inputCtrl, data) {
                 if (inputCtrl.$invalid) {
-                  $scope.data.valid[tab].iconShow[inputCtrl.$name] = true;
+                  data.valid.iconShow[inputCtrl.$name] = true;
                 }
               }
 
-              function focus(inputCtrl, tab) {
+              function focus(inputCtrl, data) {
                 if (inputCtrl.$invalid) {
-                  $scope.data.valid[tab].iconShow[inputCtrl.$name] = false;
+                  data.valid.iconShow[inputCtrl.$name] = false;
                 }
               }
 
               function selectPaymentSystems(tab, id) {
                 tab.selected = id;
-                $scope.data[tab.id].payment_system = id;
+                $scope.data[tab.id].form.payment_system = id;
               }
 
               function getActiveTab() {
                 var result;
                 angular.forEach($scope.data.config.tabs, function(tab) {
-                  if (tab.open) {
-                    result = tab;
-                  }
+                  if (tab.open) result = tab;
                 });
                 return result;
               }
 
-              function addAlert(tab, text, type) {
-                $scope.data.alert[tab] = {
+              function addAlert(data, text, type) {
+                data.alert = {
                   text: text,
                   type: type || $scope.data.options.alertDangerClass
                 };
@@ -282,21 +267,6 @@ angular
           cb(result, valid);
         }
         return result;
-      }
-    };
-  })
-  .factory('mxModal', function($uibModal) {
-    return {
-      open: function(option, $element) {
-        return $uibModal.open({
-          templateUrl: 'mx/template/checkout/modal.html',
-          controller: function($scope, $uibModalInstance) {
-            $scope.option = option;
-
-            $scope.url = '';
-          },
-          appendTo: $element
-        });
       }
     };
   });

@@ -1,7 +1,7 @@
-<form name="data.formCtrl.emoney" ng-submit="formSubmit()" novalidate>
+<form name="data.emoney.formCtrl" ng-submit="formSubmit()" novalidate>
     <div class="row">
         <div class="col-xs-12">
-            <mx-alert alert="data.alert.emoney"></mx-alert>
+            <mx-alert alert="data.emoney.alert"></mx-alert>
         </div>
     </div>
     <div class="payment-systems form-group">
@@ -23,12 +23,11 @@
             ng-repeat="id in tab.payment_systems[tab.selected].formMap"
             mx-field-input="data.emoney"
             config="data.config.fields[id]"
-            form-ctrl="data.formCtrl.emoney"
-            blur="blur(inputCtrl, 'emoney')"
-            focus="focus(inputCtrl, 'emoney')"
-            valid="data.valid.emoney"
+            config="data.config.fields[id]"
+            blur="blur(inputCtrl, data.emoney)"
+            focus="focus(inputCtrl, data.emoney)"
     ></div>
 
-    <input type="hidden" ng-model="data.emoney.payment_system" ng-required="true">
+    <input type="hidden" ng-model="data.emoney.form.payment_system" ng-required="true">
     <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1"/>
 </form>
