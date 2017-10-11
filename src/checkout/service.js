@@ -70,7 +70,7 @@ angular
                 if (data.formCtrl.$valid) {
                   if ($scope.data.disabled) return;
                   $scope.data.disabled = true;
-
+                  console.log('data.form', data.form);
                   api.scope(function() {
                     this.request('api.checkout.form', 'request', data.form)
                       .done(function(model) {
